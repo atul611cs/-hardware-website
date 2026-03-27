@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  description String?
+  image       String?
+  order       Int        @default(0)
+
+  parentId    String?
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
+
+  products    Product[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  sku         String      @unique
+  slug        String      @unique
+  description String?
+  material    String?
+  isActive    Boolean     @default(true)
+  isFeatured  Boolean     @default(false)
+
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id])
+
+  images      Image[]
+  finishes    Finish[]
+  specs       Spec[]
+  inquiryItems InquiryItem[]
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Image {
+  id         String   @id @default(uuid())
+  url        String
+  publicId   String
+  isPrimary  Boolean  @default(false)
+  order      Int      @default(0)
+
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+}
+
+model Finish {
+  id        String   @id @default(uuid())
+  name      String
+  code      String?
+
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Spec {
+  id        String   @id @default(uuid())
+  key       String
+  value     String
+
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Inquiry {
+  id          String        @id @default(uuid())
+  name        String
+  email       String
+  phone       String?
+  company     String?
+  message     String?
+  status      InquiryStatus @default(PENDING)
+
+  items       InquiryItem[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model InquiryItem {
+  id        String  @id @default(uuid())
+  quantity  Int     @default(1)
+  notes     String?
+
+  inquiryId String
+  inquiry   Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+enum InquiryStatus {
+  PENDING
+  SEEN
+  REPLIED
+  CLOSED
+}
