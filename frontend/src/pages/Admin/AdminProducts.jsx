@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getProducts, createProduct, deleteProduct } from '../../api/products.js'
+import { getProducts, createProduct, deleteProduct, uploadProductImage } from '../../api/products.js'
 import { getCategories } from '../../api/categories.js'
 
 const emptyForm = {
@@ -21,6 +21,9 @@ const AdminProducts = () => {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
+  const [uploadingId, setUploadingId] = useState(null)
+  const fileInputRef = useRef(null)
+  const [activeUploadProductId, setActiveUploadProductId] = useState(null)
 
   const { data: productsData } = useQuery({
     queryKey: ['admin-products'],
@@ -80,11 +83,7 @@ const AdminProducts = () => {
         }).filter(s => s.key && s.value)
       : []
 
-    createMutation.mutate({
-      ...form,
-      finishes,
-      specs,
-    })
+    createMutation.mutate({ ...form, finishes, specs })
   }
 
   const handleDelete = (id, name) => {
@@ -93,8 +92,39 @@ const AdminProducts = () => {
     }
   }
 
+  const handleUploadClick = (productId) => {
+    setActiveUploadProductId(productId)
+    fileInputRef.current.click()
+  }
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0]
+    if (!file || !activeUploadProductId) return
+
+    setUploadingId(activeUploadProductId)
+    try {
+      await uploadProductImage(activeUploadProductId, file)
+      queryClient.invalidateQueries(['admin-products'])
+    } catch (_err) {
+      alert('Image upload failed. Please try again.')
+    } finally {
+      setUploadingId(null)
+      setActiveUploadProductId(null)
+      e.target.value = ''
+    }
+  }
+
   return (
     <div className='min-h-screen bg-gray-50'>
+      {/* Hidden file input */}
+      <input
+        type='file'
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept='image/*'
+        className='hidden'
+      />
+
       {/* Header */}
       <header className='bg-white border-b border-gray-100'>
         <div className='max-w-7xl mx-auto px-4 py-4 flex items-center justify-between'>
@@ -196,6 +226,7 @@ const AdminProducts = () => {
           <table className='w-full'>
             <thead className='bg-gray-50'>
               <tr>
+                <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>Image</th>
                 <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>Product</th>
                 <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>SKU</th>
                 <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>Category</th>
@@ -207,6 +238,15 @@ const AdminProducts = () => {
             <tbody className='divide-y divide-gray-50'>
               {products.map((product) => (
                 <tr key={product.id} className='hover:bg-gray-50 transition'>
+                  <td className='px-6 py-4'>
+                    <div className='w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center'>
+                      {product.images?.[0] ? (
+                        <img src={product.images[0].url} alt={product.name} className='w-full h-full object-cover' />
+                      ) : (
+                        <span className='text-gray-300 text-xs'>none</span>
+                      )}
+                    </div>
+                  </td>
                   <td className='px-6 py-4'>
                     <p className='text-sm font-medium text-gray-900'>{product.name}</p>
                   </td>
@@ -227,6 +267,9 @@ const AdminProducts = () => {
                   <td className='px-6 py-4'>
                     <div className='flex items-center gap-3'>
                       <Link to={`/products/${product.slug}`} className='text-xs text-gray-400 hover:text-gray-900 transition'>View</Link>
+                      <button onClick={() => handleUploadClick(product.id)} disabled={uploadingId === product.id} className='text-xs text-blue-400 hover:text-blue-600 transition disabled:opacity-50'>
+                        {uploadingId === product.id ? 'Uploading...' : 'Upload Image'}
+                      </button>
                       <button onClick={() => handleDelete(product.id, product.name)} className='text-xs text-red-400 hover:text-red-600 transition'>Delete</button>
                     </div>
                   </td>

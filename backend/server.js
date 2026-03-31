@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.routes.js";
 import productRoutes from "./routes/products.routes.js";
 import categoryRoutes from "./routes/categories.routes.js";
 import inquiryRoutes from "./routes/inquiry.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
 
 dotenv.config();
 
@@ -36,6 +37,8 @@ app.use((err, req, res, next) => {
     message: err.message || "Internal server error",
   });
 });
+
+app.use("/api/upload", uploadRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
