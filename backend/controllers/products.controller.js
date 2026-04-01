@@ -3,13 +3,29 @@ import prisma from "../services/prisma.service.js";
 // GET /api/products
 export const getAllProducts = async (req, res) => {
   try {
-    const { category, material, featured, page = 1, limit = 20 } = req.query;
+    const {
+      category,
+      material,
+      featured,
+      page = 1,
+      limit = 20,
+      search,
+    } = req.query;
 
     const where = {};
     if (category) where.category = { slug: category };
     if (material) where.material = material;
     if (featured) where.isFeatured = true;
     where.isActive = true;
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { sku: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { material: { contains: search, mode: "insensitive" } },
+      ];
+    }
 
     const skip = (page - 1) * limit;
 

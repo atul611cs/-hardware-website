@@ -8,15 +8,15 @@ const materials = ['Aluminium', 'Iron', 'Stainless Steel', 'Brass', 'Zinc']
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [search, setSearch] = useState('')
 
   const category = searchParams.get('category') || ''
   const material = searchParams.get('material') || ''
   const page = parseInt(searchParams.get('page') || '1')
+  const search = searchParams.get('search') || ''
 
   const { data: productsData, isLoading: productsLoading } = useQuery({
-    queryKey: ['products', { category, material, page }],
-    queryFn: () => getProducts({ category, material, page, limit: 20 }),
+    queryKey: ['products', { category, material, page, search }],
+    queryFn: () => getProducts({ category, material, page, limit: 20, search }),
   })
 
   const { data: categoriesData } = useQuery({
@@ -48,8 +48,17 @@ const Products = () => {
       <div className='mb-8'>
         <h1 className='text-3xl font-bold text-gray-900 mb-2'>All Products</h1>
         <p className='text-gray-500'>
-          {pagination.total ? `${pagination.total} products found` : 'Browse our full catalog'}
+          {search
+            ? `Search results for "${search}"`
+            : pagination.total
+            ? `${pagination.total} products found`
+            : 'Browse our full catalog'}
         </p>
+        {search && (
+          <button onClick={clearFilters} className='text-xs text-gray-500 hover:text-gray-900 transition mt-1 underline'>
+            Clear search
+          </button>
+        )}
       </div>
 
       <div className='flex gap-8'>
@@ -58,7 +67,7 @@ const Products = () => {
           <div className='sticky top-24'>
             <div className='flex items-center justify-between mb-4'>
               <h3 className='font-semibold text-gray-900 text-sm'>Filters</h3>
-              {(category || material) && (
+              {(category || material || search) && (
                 <button onClick={clearFilters} className='text-xs text-gray-500 hover:text-gray-900 transition'>
                   Clear all
                 </button>
@@ -127,7 +136,9 @@ const Products = () => {
             </div>
           ) : products.length === 0 ? (
             <div className='text-center py-20'>
-              <p className='text-gray-400 mb-4'>No products found</p>
+              <p className='text-gray-400 mb-4'>
+                {search ? `No products found for "${search}"` : 'No products found'}
+              </p>
               <button onClick={clearFilters} className='text-sm text-gray-900 underline'>
                 Clear filters
               </button>

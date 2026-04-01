@@ -1,5 +1,7 @@
-import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { getProducts } from '../../api/products.js'
 
 const categories = [
   {
@@ -18,15 +20,61 @@ const categories = [
     items: ['Pull Handle', 'Tower Bolt', 'Barrel Bolts', 'Turn Button', 'Cabin Hook']
   },
   {
-    name: 'Hardware & Ironmongery',
+    name: 'Hardware and Ironmongery',
     slug: 'hardware-ironmongery',
     items: ['Door Bolt', 'Door Stopper', 'Hooks', 'Clamps', 'Brackets']
   },
 ]
 
 const Navbar = () => {
+  const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchRef = useRef(null)
+  const inputRef = useRef(null)
+
+  const { data: searchResults, isFetching } = useQuery({
+    queryKey: ['search', searchQuery],
+    queryFn: () => getProducts({ search: searchQuery, limit: 5 }),
+    enabled: searchQuery.length > 1,
+    staleTime: 300,
+  })
+
+  const results = searchResults?.data || []
+
+  useEffect(() => {
+    if (searchOpen && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [searchOpen])
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false)
+        setSearchQuery('')
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchOpen(false)
+      setSearchQuery('')
+    }
+  }
+
+  const handleResultClick = (slug) => {
+    navigate(`/products/${slug}`)
+    setSearchOpen(false)
+    setSearchQuery('')
+  }
 
   return (
     <header className='w-full bg-white border-b border-gray-100 sticky top-0 z-50'>
@@ -45,7 +93,7 @@ const Navbar = () => {
       <div className='max-w-7xl mx-auto px-4'>
         <div className='flex items-center justify-between h-16'>
           {/* Logo */}
-          <Link to='/' className='flex items-center gap-2'>
+          <Link to='/' className='flex items-center gap-2 shrink-0'>
             <div className='w-8 h-8 bg-gray-900 rounded flex items-center justify-center'>
               <span className='text-white text-xs font-bold'>HW</span>
             </div>
@@ -82,7 +130,7 @@ const Navbar = () => {
                     <div key={cat.slug}>
                       <Link
                         to={`/category/${cat.slug}`}
-                        className='text-sm font-semibold text-gray-900 hover:text-gold-500 transition block mb-2'
+                        className='text-sm font-semibold text-gray-900 hover:text-gray-600 transition block mb-2'
                       >
                         {cat.name}
                       </Link>
@@ -101,11 +149,8 @@ const Navbar = () => {
                     </div>
                   ))}
                   <div className='col-span-2 pt-4 border-t border-gray-100'>
-                    <Link
-                      to='/products'
-                      className='text-sm font-medium text-gray-900 hover:underline'
-                    >
-                      View all products →
+                    <Link to='/products' className='text-sm font-medium text-gray-900 hover:underline'>
+                      View all products
                     </Link>
                   </div>
                 </div>
@@ -131,21 +176,83 @@ const Navbar = () => {
             </NavLink>
           </nav>
 
-          {/* CTA */}
+          {/* Right side — search + CTA */}
           <div className='hidden md:flex items-center gap-3'>
-            <Link
-              to='/contact'
-              className='px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 transition'
-            >
+            {/* Search */}
+            <div ref={searchRef} className='relative'>
+              {searchOpen ? (
+                <form onSubmit={handleSearchSubmit} className='flex items-center'>
+                  <input
+                    ref={inputRef}
+                    type='text'
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder='Search products...'
+                    className='w-56 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400 transition'
+                  />
+                  <button type='button' onClick={() => { setSearchOpen(false); setSearchQuery('') }} className='ml-2 text-gray-400 hover:text-gray-900 transition'>
+                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                    </svg>
+                  </button>
+                </form>
+              ) : (
+                <button onClick={() => setSearchOpen(true)} className='p-2 text-gray-500 hover:text-gray-900 transition'>
+                  <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+                  </svg>
+                </button>
+              )}
+
+              {/* Search results dropdown */}
+              {searchOpen && searchQuery.length > 1 && (
+                <div className='absolute top-full right-0 mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden'>
+                  {isFetching ? (
+                    <div className='p-4 text-sm text-gray-400 text-center'>Searching...</div>
+                  ) : results.length === 0 ? (
+                    <div className='p-4 text-sm text-gray-400 text-center'>No products found</div>
+                  ) : (
+                    <>
+                      <div className='px-4 py-2 border-b border-gray-50'>
+                        <p className='text-xs text-gray-400'>{results.length} results for "{searchQuery}"</p>
+                      </div>
+                      {results.map((product) => (
+                        <button
+                          key={product.id}
+                          onClick={() => handleResultClick(product.slug)}
+                          className='w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-left'
+                        >
+                          <div className='w-10 h-10 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center'>
+                            {product.images?.[0] ? (
+                              <img src={product.images[0].url} alt={product.name} className='w-full h-full object-cover' />
+                            ) : (
+                              <span className='text-gray-300 text-xs'>HW</span>
+                            )}
+                          </div>
+                          <div>
+                            <p className='text-sm font-medium text-gray-900'>{product.name}</p>
+                            <p className='text-xs text-gray-400'>{product.category?.name} · {product.sku}</p>
+                          </div>
+                        </button>
+                      ))}
+                      <div className='px-4 py-2 border-t border-gray-50'>
+                        <button onClick={handleSearchSubmit} className='text-xs text-gray-500 hover:text-gray-900 transition'>
+                          See all results for "{searchQuery}"
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <Link to='/contact' className='px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 transition'>
               Get a Quote
             </Link>
           </div>
 
           {/* Mobile menu button */}
-          <button
-            className='md:hidden p-2 text-gray-600'
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
+          <button className='md:hidden p-2 text-gray-600' onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? (
               <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
@@ -162,6 +269,18 @@ const Navbar = () => {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className='md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-2'>
+          {/* Mobile search */}
+          <form onSubmit={handleSearchSubmit} className='flex gap-2 mb-3'>
+            <input
+              type='text'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder='Search products...'
+              className='flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400'
+            />
+            <button type='submit' className='px-3 py-2 bg-gray-900 text-white rounded-lg text-sm'>Go</button>
+          </form>
+
           <Link to='/' className='block py-2 text-sm text-gray-700' onClick={() => setMobileOpen(false)}>Home</Link>
           <Link to='/products' className='block py-2 text-sm text-gray-700' onClick={() => setMobileOpen(false)}>Products</Link>
           {categories.map((cat) => (
@@ -176,11 +295,7 @@ const Navbar = () => {
           ))}
           <Link to='/about' className='block py-2 text-sm text-gray-700' onClick={() => setMobileOpen(false)}>About</Link>
           <Link to='/contact' className='block py-2 text-sm text-gray-700' onClick={() => setMobileOpen(false)}>Contact</Link>
-          <Link
-            to='/contact'
-            className='block mt-2 px-4 py-2 bg-gray-900 text-white text-sm rounded-lg text-center'
-            onClick={() => setMobileOpen(false)}
-          >
+          <Link to='/contact' className='block mt-2 px-4 py-2 bg-gray-900 text-white text-sm rounded-lg text-center' onClick={() => setMobileOpen(false)}>
             Get a Quote
           </Link>
         </div>
