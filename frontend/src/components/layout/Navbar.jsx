@@ -92,7 +92,8 @@ const Navbar = () => {
       {/* Main nav */}
       <div className='max-w-7xl mx-auto px-4'>
         <div className='flex items-center justify-between h-16'>
-          {/* Logo */}
+
+          {/* Logo — left side */}
           <Link to='/' className='flex items-center gap-2 shrink-0'>
             <div className='w-8 h-8 bg-gray-900 rounded flex items-center justify-center'>
               <span className='text-white text-xs font-bold'>HW</span>
@@ -100,8 +101,9 @@ const Navbar = () => {
             <span className='font-semibold text-gray-900 text-lg'>Hardware Co.</span>
           </Link>
 
-          {/* Desktop nav */}
-          <nav className='hidden md:flex items-center gap-1'>
+          {/* Right side — nav + search + CTA */}
+          <div className='hidden md:flex items-center gap-1'>
+
             <NavLink
               to='/'
               className={({ isActive }) =>
@@ -125,7 +127,7 @@ const Navbar = () => {
               </button>
 
               {activeDropdown === 'products' && (
-                <div className='absolute top-full left-1/2 -translate-x-1/2 w-[600px] bg-white border border-gray-100 rounded-xl shadow-xl p-6 grid grid-cols-2 gap-6'>
+                <div className='absolute top-full right-0 w-[600px] bg-white border border-gray-100 rounded-xl shadow-xl p-6 grid grid-cols-2 gap-6'>
                   {categories.map((cat) => (
                     <div key={cat.slug}>
                       <Link
@@ -174,10 +176,10 @@ const Navbar = () => {
             >
               Contact
             </NavLink>
-          </nav>
 
-          {/* Right side — search + CTA */}
-          <div className='hidden md:flex items-center gap-3'>
+            {/* Divider */}
+            <div className='w-px h-5 bg-gray-200 mx-2'></div>
+
             {/* Search */}
             <div ref={searchRef} className='relative'>
               {searchOpen ? (
@@ -246,7 +248,8 @@ const Navbar = () => {
               )}
             </div>
 
-            <Link to='/contact' className='px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 transition'>
+            {/* CTA */}
+            <Link to='/contact' className='ml-2 px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 transition'>
               Get a Quote
             </Link>
           </div>
@@ -269,7 +272,6 @@ const Navbar = () => {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className='md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-2'>
-          {/* Mobile search */}
           <form onSubmit={handleSearchSubmit} className='flex gap-2 mb-3'>
             <input
               type='text'
