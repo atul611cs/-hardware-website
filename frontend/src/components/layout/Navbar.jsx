@@ -1,30 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { motion, AnimatePresence } from 'framer-motion'
 import { getProducts } from '../../api/products.js'
 
-const categories = [
-  {
-    name: 'Aluminium Hardware',
-    slug: 'aluminium-hardware',
-    items: ['Alum Handle', 'Alum Hinge', 'Alum Hook', 'Alum Stay', 'Alum Tower Bolt']
-  },
-  {
-    name: 'Gate Hardware',
-    slug: 'gate-hardware',
-    items: ['Hinges', 'Pad Bolt', 'Spring Latch', 'Tee Hinge', 'Hook and Band']
-  },
-  {
-    name: 'Architectural Hardware',
-    slug: 'architectural-hardware',
-    items: ['Pull Handle', 'Tower Bolt', 'Barrel Bolts', 'Turn Button', 'Cabin Hook']
-  },
-  {
-    name: 'Hardware and Ironmongery',
-    slug: 'hardware-ironmongery',
-    items: ['Door Bolt', 'Door Stopper', 'Hooks', 'Clamps', 'Brackets']
-  },
-]
+import { getCategories } from '../../api/categories.js'
 
 const Navbar = () => {
   const navigate = useNavigate()
@@ -41,6 +21,14 @@ const Navbar = () => {
     enabled: searchQuery.length > 1,
     staleTime: 300,
   })
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+    staleTime: 60000,
+  })
+
+  const dbCategories = categoriesData?.data || []
 
   const results = searchResults?.data || []
 
@@ -126,37 +114,58 @@ const Navbar = () => {
                 </svg>
               </button>
 
-              {activeDropdown === 'products' && (
-                <div className='absolute top-full right-0 w-[600px] bg-white border border-gray-100 rounded-xl shadow-xl p-6 grid grid-cols-2 gap-6'>
-                  {categories.map((cat) => (
-                    <div key={cat.slug}>
-                      <Link
-                        to={`/category/${cat.slug}`}
-                        className='text-sm font-semibold text-gray-900 hover:text-gray-600 transition block mb-2'
-                      >
-                        {cat.name}
-                      </Link>
-                      <ul className='space-y-1'>
-                        {cat.items.map((item) => (
-                          <li key={item}>
-                            <Link
-                              to={`/products?category=${cat.slug}`}
-                              className='text-xs text-gray-500 hover:text-gray-900 transition block'
-                            >
-                              {item}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+              <AnimatePresence>
+                {activeDropdown === 'products' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 5, scale: 0.98 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className='absolute top-full -right-20 w-[850px] bg-white/95 backdrop-blur-xl border border-gray-100 rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.08)] p-6 z-50 mt-4 origin-top'
+                  >
+                    {/* Decorative Pointer */}
+                    <div className='absolute -top-2 left-1/4 w-4 h-4 bg-white border-l border-t border-gray-100 transform rotate-45 -translate-x-1/2'></div>
+                    
+                    <div className='grid grid-cols-3 gap-6 relative z-10'>
+                      {dbCategories.map((cat) => (
+                        <div key={cat.slug} className='flex flex-col'>
+                          <Link
+                            to={`/category/${cat.slug}`}
+                            className='text-base font-bold text-gray-900 hover:text-blue-600 transition block mb-2 border-b border-gray-100/80 pb-2 group flex items-center justify-between'
+                            onClick={() => setActiveDropdown(null)}
+                          >
+                            <span>{cat.name}</span>
+                            <svg className='w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-blue-600' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+                            </svg>
+                          </Link>
+                          <ul className='space-y-1 flex-1'>
+                            {cat.children?.map((sub) => (
+                              <li key={sub.slug}>
+                                <Link
+                                  to={`/category/${sub.slug}`}
+                                  className='text-[14px] text-gray-500 hover:text-gray-900 hover:translate-x-1 transition-all block'
+                                  onClick={() => setActiveDropdown(null)}
+                                >
+                                  {sub.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                      <div className='col-span-3 pt-4 mt-1 border-t border-gray-100/80 flex justify-end'>
+                        <Link to='/products' className='px-6 py-2 bg-gray-50 hover:bg-gray-100 text-sm font-semibold text-gray-900 rounded-xl transition flex items-center gap-2 group'>
+                          View all products
+                          <svg className='w-4 h-4 transform group-hover:translate-x-1 transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17 8l4 4m0 0l-4 4m4-4H3' />
+                          </svg>
+                        </Link>
+                      </div>
                     </div>
-                  ))}
-                  <div className='col-span-2 pt-4 border-t border-gray-100'>
-                    <Link to='/products' className='text-sm font-medium text-gray-900 hover:underline'>
-                      View all products
-                    </Link>
-                  </div>
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <NavLink
@@ -285,7 +294,7 @@ const Navbar = () => {
 
           <Link to='/' className='block py-2 text-sm text-gray-700' onClick={() => setMobileOpen(false)}>Home</Link>
           <Link to='/products' className='block py-2 text-sm text-gray-700' onClick={() => setMobileOpen(false)}>Products</Link>
-          {categories.map((cat) => (
+          {dbCategories.map((cat) => (
             <Link
               key={cat.slug}
               to={`/category/${cat.slug}`}

@@ -4,19 +4,19 @@ import { useQuery } from '@tanstack/react-query'
 import { getProducts } from '../api/products.js'
 import { getCategories } from '../api/categories.js'
 
-const materials = ['Aluminium', 'Iron', 'Stainless Steel', 'Brass', 'Zinc']
+
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const category = searchParams.get('category') || ''
-  const material = searchParams.get('material') || ''
+  const finish = searchParams.get('finish') || ''
   const page = parseInt(searchParams.get('page') || '1')
   const search = searchParams.get('search') || ''
 
   const { data: productsData, isLoading: productsLoading } = useQuery({
-    queryKey: ['products', { category, material, page, search }],
-    queryFn: () => getProducts({ category, material, page, limit: 20, search }),
+    queryKey: ['products', { category, finish, page, search }],
+    queryFn: () => getProducts({ category, finish, page, limit: 20, search }),
   })
 
   const { data: categoriesData } = useQuery({
@@ -67,14 +67,14 @@ const Products = () => {
           <div className='sticky top-24'>
             <div className='flex items-center justify-between mb-4'>
               <h3 className='font-semibold text-gray-900 text-sm'>Filters</h3>
-              {(category || material || search) && (
+              {(category || finish || search) && (
                 <button onClick={clearFilters} className='text-xs text-gray-500 hover:text-gray-900 transition'>
                   Clear all
                 </button>
               )}
             </div>
 
-            {/* Categories */}
+            {/* Categories & Subcategories */}
             <div className='mb-6'>
               <h4 className='text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3'>Category</h4>
               <ul className='space-y-1'>
@@ -87,38 +87,28 @@ const Products = () => {
                   </button>
                 </li>
                 {categories.map((cat) => (
-                  <li key={cat.id}>
+                  <li key={cat.id} className='mb-2'>
                     <button
                       onClick={() => setFilter('category', cat.slug)}
-                      className={`text-sm w-full text-left px-2 py-1 rounded transition ${category === cat.slug ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
+                      className={`text-sm w-full text-left px-2 py-1 rounded transition ${category === cat.slug ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`}
                     >
                       {cat.name}
                     </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Material */}
-            <div className='mb-6'>
-              <h4 className='text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3'>Material</h4>
-              <ul className='space-y-1'>
-                <li>
-                  <button
-                    onClick={() => setFilter('material', '')}
-                    className={`text-sm w-full text-left px-2 py-1 rounded transition ${!material ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
-                  >
-                    All Materials
-                  </button>
-                </li>
-                {materials.map((mat) => (
-                  <li key={mat}>
-                    <button
-                      onClick={() => setFilter('material', mat)}
-                      className={`text-sm w-full text-left px-2 py-1 rounded transition ${material === mat ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
-                    >
-                      {mat}
-                    </button>
+                    {/* Subcategories */}
+                    {cat.children && cat.children.length > 0 && (
+                      <ul className='pl-4 mt-1 space-y-1'>
+                        {cat.children.map((sub) => (
+                          <li key={sub.id}>
+                            <button
+                              onClick={() => setFilter('category', sub.slug)}
+                              className={`text-xs w-full text-left px-2 py-1 rounded transition ${category === sub.slug ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
+                            >
+                              {sub.name}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>

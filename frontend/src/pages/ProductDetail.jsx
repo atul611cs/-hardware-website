@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getProductBySlug } from '../api/products.js'
@@ -7,10 +7,9 @@ import { submitInquiry } from '../api/inquiry.js'
 const ProductDetail = () => {
   const { slug } = useParams()
   const [activeImage, setActiveImage] = useState(0)
-  const [quantity, setQuantity] = useState(1)
+  const [activeSize, setActiveSize] = useState(null)
   const [inquirySent, setInquirySent] = useState(false)
   const [sending, setSending] = useState(false)
-
   const { data, isLoading, isError } = useQuery({
     queryKey: ['product', slug],
     queryFn: () => getProductBySlug(slug),
@@ -24,8 +23,8 @@ const ProductDetail = () => {
       await submitInquiry({
         name: 'Website Visitor',
         email: 'inquiry@website.com',
-        items: [{ productId: product.id, quantity }],
-        message: `Inquiry for ${product.name} — Qty: ${quantity}`,
+        items: [{ productId: product.id, quantity: 1, notes: '' }],
+        message: `Inquiry for ${product.name}`,
       })
       setInquirySent(true)
     } catch (_err) {
@@ -104,19 +103,18 @@ const ProductDetail = () => {
 
         {/* Info */}
         <div>
+          {/* 1. Category */}
           {product.category && (
             <Link to={`/category/${product.category.slug}`} className='text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-900 transition mb-2 block'>
               {product.category.name}
             </Link>
           )}
+          {/* 2. Product Name */}
           <h1 className='text-3xl font-bold text-gray-900 mb-2'>{product.name}</h1>
+          {/* 3. SKU */}
           {product.sku && <p className='text-sm text-gray-400 mb-4'>SKU: {product.sku}</p>}
 
-          {product.description && (
-            <p className='text-gray-600 leading-relaxed mb-6'>{product.description}</p>
-          )}
-
-          {/* Finishes */}
+          {/* 4. Finishes */}
           {product.finishes?.length > 0 && (
             <div className='mb-6'>
               <h3 className='text-sm font-semibold text-gray-900 mb-2'>Available Finishes</h3>
@@ -128,38 +126,100 @@ const ProductDetail = () => {
             </div>
           )}
 
-          {/* Specs */}
-          {product.specs?.length > 0 && (
-            <div className='mb-6'>
-              <h3 className='text-sm font-semibold text-gray-900 mb-2'>Specifications</h3>
-              <table className='w-full text-sm'>
-                <tbody>
-                  {product.specs.map((spec) => (
-                    <tr key={spec.id} className='border-b border-gray-100'>
-                      <td className='py-2 text-gray-500 w-1/2'>{spec.key}</td>
-                      <td className='py-2 text-gray-900 font-medium'>{spec.value}</td>
-                    </tr>
+          {/* General Specifications */}
+          {(() => {
+            const generalSpecs = product.specs?.filter(s => !s.size) || [];
+            if (generalSpecs.length === 0) return null;
+            return (
+              <div className='mb-6'>
+                <h3 className='text-sm font-semibold text-gray-900 mb-3'>General Specifications</h3>
+                <div className='overflow-hidden'>
+                  <table className='w-full text-sm text-left bg-transparent'>
+                    <tbody className='divide-y divide-gray-100'>
+                      {generalSpecs.map((spec) => (
+                        <tr key={spec.id} className='hover:bg-gray-50/50 transition'>
+                          <td className='py-2.5 pr-4 font-bold text-gray-900 w-1/3'>{spec.key}</td>
+                          <td className='py-2.5 px-4 text-gray-600'>{spec.value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Sizes */}
+          {(() => {
+            const sizes = product.specs ? Array.from(new Set(product.specs.filter(s => s.size).map(s => s.size))) : [];
+            if (sizes.length === 0) return null;
+            
+            const currentSize = activeSize && sizes.includes(activeSize) ? activeSize : sizes[0];
+            
+            return (
+              <div className='mb-6'>
+                <h3 className='text-sm font-semibold text-gray-900 mb-2'>Sizes</h3>
+                <div className='flex flex-wrap gap-2'>
+                  {sizes.map((size) => (
+                    <button 
+                      key={size} 
+                      onClick={() => setActiveSize(size)}
+                      className={`px-4 py-2 text-sm rounded-lg border transition font-medium ${
+                        currentSize === size 
+                          ? 'border-gray-900 bg-gray-900 text-white' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      {size}
+                    </button>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Size-specific Specifications */}
+          {(() => {
+            const sizes = product.specs ? Array.from(new Set(product.specs.filter(s => s.size).map(s => s.size))) : [];
+            const currentSize = activeSize && sizes.includes(activeSize) ? activeSize : (sizes.length > 0 ? sizes[0] : null);
+            
+            const sizeSpecs = product.specs?.filter(s => s.size === currentSize) || [];
+            if (sizeSpecs.length === 0) return null;
+            
+            return (
+              <div className='mb-6'>
+                <h3 className='text-sm font-semibold text-gray-900 mb-3'>{currentSize} Specifications</h3>
+                <div className='overflow-hidden'>
+                  <table className='w-full text-sm text-left bg-transparent'>
+                    <tbody className='divide-y divide-gray-100'>
+                      {sizeSpecs.map((spec) => (
+                        <tr key={spec.id} className='hover:bg-gray-50/50 transition'>
+                          <td className='py-2.5 pr-4 font-bold text-gray-900 w-1/3'>{spec.key}</td>
+                          <td className='py-2.5 px-4 text-gray-600'>{spec.value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* 7. Description */}
+          {product.description && (
+            <div className='mb-6'>
+              <h3 className='text-sm font-semibold text-gray-900 mb-2'>Description</h3>
+              <p className='text-gray-600 leading-relaxed'>{product.description}</p>
             </div>
           )}
 
-          {/* Quantity and inquiry */}
+          {/* Inquiry */}
           {inquirySent ? (
             <div className='bg-green-50 border border-green-200 rounded-xl p-4 text-center'>
               <p className='text-sm font-medium text-green-800'>Inquiry sent! We will get back to you within 24 hours.</p>
             </div>
           ) : (
             <div className='space-y-3'>
-              <div className='flex items-center gap-3'>
-                <label className='text-sm font-medium text-gray-700'>Quantity:</label>
-                <div className='flex items-center border border-gray-200 rounded-lg overflow-hidden'>
-                  <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className='px-3 py-2 text-gray-600 hover:bg-gray-50 transition'>-</button>
-                  <span className='px-4 py-2 text-sm font-medium text-gray-900'>{quantity}</span>
-                  <button onClick={() => setQuantity(q => q + 1)} className='px-3 py-2 text-gray-600 hover:bg-gray-50 transition'>+</button>
-                </div>
-              </div>
               <button onClick={handleInquiry} disabled={sending} className='w-full py-3 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition disabled:opacity-50'>
                 {sending ? 'Sending...' : 'Request a Quote'}
               </button>

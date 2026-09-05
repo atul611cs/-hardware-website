@@ -5,7 +5,7 @@ export const getAllProducts = async (req, res) => {
   try {
     const {
       category,
-      material,
+      finish,
       featured,
       page = 1,
       limit = 20,
@@ -14,7 +14,7 @@ export const getAllProducts = async (req, res) => {
 
     const where = {};
     if (category) where.category = { slug: category };
-    if (material) where.material = material;
+    if (finish) where.finishes = { some: { name: finish } };
     if (featured) where.isFeatured = true;
     where.isActive = true;
 
@@ -36,6 +36,7 @@ export const getAllProducts = async (req, res) => {
           category: true,
           images: { orderBy: { order: "asc" } },
           finishes: true,
+          specs: true,
         },
         skip: Number(skip),
         take: Number(limit),
@@ -93,6 +94,7 @@ export const createProduct = async (req, res) => {
       slug,
       description,
       material,
+      sizes,
       categoryId,
       isFeatured,
       finishes,
@@ -106,6 +108,7 @@ export const createProduct = async (req, res) => {
         slug,
         description,
         material,
+        sizes,
         categoryId,
         isFeatured: isFeatured || false,
         finishes: {
@@ -137,6 +140,7 @@ export const updateProduct = async (req, res) => {
       slug,
       description,
       material,
+      sizes,
       categoryId,
       isFeatured,
       isActive,
@@ -150,9 +154,22 @@ export const updateProduct = async (req, res) => {
         slug,
         description,
         material,
+        sizes,
         categoryId,
         isFeatured,
         isActive,
+        ...(req.body.finishes && {
+          finishes: {
+            deleteMany: {},
+            create: req.body.finishes,
+          }
+        }),
+        ...(req.body.specs && {
+          specs: {
+            deleteMany: {},
+            create: req.body.specs,
+          }
+        })
       },
       include: {
         category: true,

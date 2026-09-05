@@ -3,40 +3,44 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+const slugify = (text) => text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+
 async function main() {
   console.log("Seeding database...");
 
+  // Clean existing data to ensure old categories are removed
+  await prisma.inquiryItem.deleteMany({});
+  await prisma.inquiry.deleteMany({});
+  await prisma.image.deleteMany({});
+  await prisma.finish.deleteMany({});
+  await prisma.spec.deleteMany({});
+  await prisma.product.deleteMany({});
+  await prisma.category.deleteMany({});
+  await prisma.admin.deleteMany({});
+
   // ── Admin ─────────────────────────────────────────────────────────────────
   const hashedPassword = await bcrypt.hash("admin123", 10);
-
-  await prisma.admin.upsert({
-    where: { email: "admin@hardware.com" },
-    update: {},
-    create: {
+  await prisma.admin.create({
+    data: {
       email: "admin@hardware.com",
       password: hashedPassword,
       name: "Admin User",
     },
   });
-
   console.log("Admin created — email: admin@hardware.com, password: admin123");
 
   // ── Categories ────────────────────────────────────────────────────────────
-  const aluminium = await prisma.category.upsert({
-    where: { slug: "aluminium-hardware" },
-    update: {},
-    create: {
-      name: "Aluminium Hardware",
-      slug: "aluminium-hardware",
-      description: "Premium aluminium hardware fittings for doors and windows",
+  const architectural = await prisma.category.create({
+    data: {
+      name: "Architectural Hardware",
+      slug: "architectural-hardware",
+      description: "Architectural ironmongery for residential and commercial use",
       order: 1,
     },
   });
 
-  const gate = await prisma.category.upsert({
-    where: { slug: "gate-hardware" },
-    update: {},
-    create: {
+  const gate = await prisma.category.create({
+    data: {
       name: "Gate Hardware",
       slug: "gate-hardware",
       description: "Heavy duty gate hardware for all types of gates",
@@ -44,213 +48,77 @@ async function main() {
     },
   });
 
-  const architectural = await prisma.category.upsert({
-    where: { slug: "architectural-hardware" },
-    update: {},
-    create: {
-      name: "Architectural Hardware",
-      slug: "architectural-hardware",
-      description:
-        "Architectural ironmongery for residential and commercial use",
+  const ironmongery = await prisma.category.create({
+    data: {
+      name: "Ironmongery",
+      slug: "ironmongery",
+      description: "General hardware and ironmongery products",
       order: 3,
     },
   });
-
-  const ironmongery = await prisma.category.upsert({
-    where: { slug: "hardware-ironmongery" },
-    update: {},
-    create: {
-      name: "Hardware and Ironmongery",
-      slug: "hardware-ironmongery",
-      description: "General hardware and ironmongery products",
-      order: 4,
-    },
-  });
-
   console.log("Categories created");
 
   // ── Subcategories ─────────────────────────────────────────────────────────
-  await prisma.category.upsert({
-    where: { slug: "alum-handle" },
-    update: {},
-    create: {
-      name: "Alum Handle",
-      slug: "alum-handle",
-      parentId: aluminium.id,
-      order: 1,
-    },
-  });
+  const archItems = ['Bolts', 'Brackets', 'Cabin Hook', 'Corners', 'Plates', 'Table Legs'];
+  const gateItems = ['Band', 'Gate Spring', 'Handles', 'Hasp & Staples', 'Hinges', 'Hook', 'Latches', 'Scotch Tee Hinges', 'Strap Hinges', 'Tee Hinges'];
+  const ironItems = ['Band', 'Bolts', 'Brackets', 'Cabin Hook', 'Clamps', 'Corners', 'Gate Spring', 'Handles', 'Hasp & Staples', 'Hinges', 'Hook', 'Latches', 'Plates', 'Scotch Tee Hinges', 'Strap Hinges', 'Table Legs', 'Tee Hinges'];
 
-  await prisma.category.upsert({
-    where: { slug: "alum-hinge" },
-    update: {},
-    create: {
-      name: "Alum Hinge",
-      slug: "alum-hinge",
-      parentId: aluminium.id,
-      order: 2,
-    },
-  });
-
-  await prisma.category.upsert({
-    where: { slug: "pad-bolt" },
-    update: {},
-    create: {
-      name: "Pad Bolt",
-      slug: "pad-bolt",
-      parentId: gate.id,
-      order: 1,
-    },
-  });
-
-  await prisma.category.upsert({
-    where: { slug: "tee-hinge" },
-    update: {},
-    create: {
-      name: "Tee Hinge",
-      slug: "tee-hinge",
-      parentId: gate.id,
-      order: 2,
-    },
-  });
-
+  for (let i = 0; i < archItems.length; i++) {
+    await prisma.category.create({
+      data: { name: archItems[i], slug: `arch-${slugify(archItems[i])}`, parentId: architectural.id, order: i + 1 },
+    });
+  }
+  for (let i = 0; i < gateItems.length; i++) {
+    await prisma.category.create({
+      data: { name: gateItems[i], slug: `gate-${slugify(gateItems[i])}`, parentId: gate.id, order: i + 1 },
+    });
+  }
+  for (let i = 0; i < ironItems.length; i++) {
+    await prisma.category.create({
+      data: { name: ironItems[i], slug: `iron-${slugify(ironItems[i])}`, parentId: ironmongery.id, order: i + 1 },
+    });
+  }
   console.log("Subcategories created");
 
   // ── Sample Products ───────────────────────────────────────────────────────
-  await prisma.product.upsert({
-    where: { slug: "aluminium-door-handle-ah-101" },
-    update: {},
-    create: {
-      name: "Aluminium Door Handle AH-101",
-      sku: "AH-101",
-      slug: "aluminium-door-handle-ah-101",
-      description:
-        "Premium aluminium door handle with smooth finish. Suitable for residential and commercial doors. Corrosion resistant and durable.",
-      material: "Aluminium",
-      categoryId: aluminium.id,
-      isFeatured: true,
-      finishes: {
-        create: [
-          { name: "Chrome" },
-          { name: "Antique Brass" },
-          { name: "Powder Coated Black" },
-        ],
-      },
-      specs: {
-        create: [
-          { key: "Length", value: "200mm" },
-          { key: "Weight", value: "180g" },
-          { key: "Material", value: "Aluminium Alloy" },
-          { key: "Fixing", value: "Screw fix" },
-        ],
-      },
-    },
-  });
-
-  await prisma.product.upsert({
-    where: { slug: "heavy-duty-pad-bolt-pb-201" },
-    update: {},
-    create: {
-      name: "Heavy Duty Pad Bolt PB-201",
+  await prisma.product.create({
+    data: {
+      name: "Heavy Duty Pad Bolt",
       sku: "PB-201",
       slug: "heavy-duty-pad-bolt-pb-201",
-      description:
-        "Heavy duty pad bolt for gates and doors. Built for outdoor use with galvanized finish for rust resistance.",
-      material: "Iron",
+      description: "Heavy duty pad bolt for gates and doors. Built for outdoor use.",
       categoryId: gate.id,
       isFeatured: true,
       finishes: {
-        create: [{ name: "Galvanized" }, { name: "Black Powder Coat" }],
-      },
-      specs: {
-        create: [
-          { key: "Length", value: "300mm" },
-          { key: "Weight", value: "450g" },
-          { key: "Material", value: "MS Iron" },
-          { key: "Bolt Diameter", value: "12mm" },
-        ],
+        create: [{ name: "Zinc" }, { name: "Powder Coating/ Black" }],
       },
     },
   });
 
-  await prisma.product.upsert({
-    where: { slug: "tee-hinge-th-301" },
-    update: {},
-    create: {
-      name: "Tee Hinge TH-301",
-      sku: "TH-301",
-      slug: "tee-hinge-th-301",
-      description:
-        "Traditional tee hinge for wooden gates and barn doors. Heavy gauge steel construction for long lasting performance.",
-      material: "Iron",
-      categoryId: gate.id,
-      isFeatured: false,
-      finishes: {
-        create: [{ name: "Galvanized" }, { name: "Antique Black" }],
-      },
-      specs: {
-        create: [
-          { key: "Size", value: "300mm x 100mm" },
-          { key: "Weight", value: "320g" },
-          { key: "Material", value: "MS Steel" },
-          { key: "Load Capacity", value: "80kg" },
-        ],
-      },
-    },
-  });
-
-  await prisma.product.upsert({
-    where: { slug: "tower-bolt-tb-401" },
-    update: {},
-    create: {
-      name: "Tower Bolt TB-401",
+  await prisma.product.create({
+    data: {
+      name: "Classic Tower Bolt",
       sku: "TB-401",
       slug: "tower-bolt-tb-401",
-      description:
-        "Classic tower bolt for doors and windows. Smooth sliding action with sturdy construction.",
-      material: "Brass",
+      description: "Classic tower bolt for doors and windows. Smooth sliding action.",
       categoryId: architectural.id,
       isFeatured: true,
       finishes: {
-        create: [
-          { name: "Polished Brass" },
-          { name: "Satin Nickel" },
-          { name: "Antique Copper" },
-        ],
-      },
-      specs: {
-        create: [
-          { key: "Length", value: "150mm" },
-          { key: "Weight", value: "120g" },
-          { key: "Material", value: "Brass" },
-          { key: "Bolt Diameter", value: "8mm" },
-        ],
+        create: [{ name: "Chrome" }, { name: "E.brass" }],
       },
     },
   });
 
-  await prisma.product.upsert({
-    where: { slug: "door-stopper-ds-501" },
-    update: {},
-    create: {
-      name: "Door Stopper DS-501",
-      sku: "DS-501",
-      slug: "door-stopper-ds-501",
-      description:
-        "Floor mounted door stopper with rubber tip. Prevents door from hitting walls and protects surfaces.",
-      material: "Stainless Steel",
+  await prisma.product.create({
+    data: {
+      name: "Gate Spring 8 Inch",
+      sku: "GS-800",
+      slug: "gate-spring-8-inch",
+      description: "Durable gate spring for automatic closing.",
       categoryId: ironmongery.id,
       isFeatured: false,
       finishes: {
-        create: [{ name: "Satin Stainless" }, { name: "Polished Chrome" }],
-      },
-      specs: {
-        create: [
-          { key: "Height", value: "35mm" },
-          { key: "Base Diameter", value: "40mm" },
-          { key: "Material", value: "SS 304" },
-          { key: "Fixing", value: "Floor mounted" },
-        ],
+        create: [{ name: "Self colour" }, { name: "Zinc" }],
       },
     },
   });

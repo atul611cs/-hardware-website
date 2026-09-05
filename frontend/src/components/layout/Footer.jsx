@@ -27,10 +27,9 @@ const Footer = () => {
           <div>
             <h4 className='text-white text-sm font-semibold mb-4'>Products</h4>
             <ul className='space-y-2 text-sm'>
-              <li><Link to='/category/aluminium-hardware' className='hover:text-white transition'>Aluminium Hardware</Link></li>
-              <li><Link to='/category/gate-hardware' className='hover:text-white transition'>Gate Hardware</Link></li>
               <li><Link to='/category/architectural-hardware' className='hover:text-white transition'>Architectural Hardware</Link></li>
-              <li><Link to='/category/hardware-ironmongery' className='hover:text-white transition'>Hardware and Ironmongery</Link></li>
+              <li><Link to='/category/gate-hardware' className='hover:text-white transition'>Gate Hardware</Link></li>
+              <li><Link to='/category/ironmongery' className='hover:text-white transition'>Ironmongery</Link></li>
               <li><Link to='/products' className='hover:text-white transition'>View All Products</Link></li>
             </ul>
           </div>
