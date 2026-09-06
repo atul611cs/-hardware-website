@@ -12,10 +12,12 @@ import AdminDashboard from './pages/Admin/AdminDashboard.jsx'
 import AdminProducts from './pages/Admin/AdminProducts.jsx'
 import AdminInquiries from './pages/Admin/AdminInquiries.jsx'
 import ProtectedRoute from './components/ui/ProtectedRoute.jsx'
+import ScrollToTop from './components/layout/ScrollToTop.jsx'
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* Public routes with Navbar and Footer */}
         <Route path='/' element={<><Navbar /><main><Home /></main><Footer /></>} />

@@ -61,7 +61,7 @@ const AdminInquiries = () => {
                           {inquiry.status}
                         </span>
                       </div>
-                      <div className='flex gap-4 text-xs text-gray-400 mb-3'>
+                      <div className='flex flex-wrap gap-4 text-xs text-gray-400 mb-3'>
                         <span>{inquiry.email}</span>
                         {inquiry.phone && <span>{inquiry.phone}</span>}
                         {inquiry.company && <span>{inquiry.company}</span>}

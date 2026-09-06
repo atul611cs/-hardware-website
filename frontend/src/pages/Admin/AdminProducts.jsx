@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getProducts, createProduct, deleteProduct, uploadProductImage } from '../../api/products.js'
+import { getProducts, createProduct, updateProduct, deleteProduct, uploadProductImage } from '../../api/products.js'
 import { getCategories } from '../../api/categories.js'
 
 const emptyForm = {
@@ -9,11 +9,10 @@ const emptyForm = {
   sku: '',
   slug: '',
   description: '',
-  material: '',
   categoryId: '',
   isFeatured: false,
   finishes: '',
-  specs: '',
+  specs: [],
 }
 
 const AdminProducts = () => {
@@ -22,6 +21,7 @@ const AdminProducts = () => {
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
   const [uploadingId, setUploadingId] = useState(null)
+  const [editingId, setEditingId] = useState(null)
   const fileInputRef = useRef(null)
   const [activeUploadProductId, setActiveUploadProductId] = useState(null)
 
@@ -44,6 +44,18 @@ const AdminProducts = () => {
       setError('')
     },
     onError: () => setError('Failed to create product. Please check all fields.'),
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: (data) => updateProduct(editingId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['admin-products'])
+      setShowForm(false)
+      setForm(emptyForm)
+      setEditingId(null)
+      setError('')
+    },
+    onError: () => setError('Failed to update product. Please check all fields.'),
   })
 
   const deleteMutation = useMutation({
@@ -76,20 +88,35 @@ const AdminProducts = () => {
       ? form.finishes.split(',').map(f => ({ name: f.trim() })).filter(f => f.name)
       : []
 
-    const specs = form.specs
-      ? form.specs.split(',').map(s => {
-          const [key, value] = s.split(':')
-          return { key: key?.trim(), value: value?.trim() }
-        }).filter(s => s.key && s.value)
-      : []
+    const specs = form.specs ? form.specs.filter(s => s.key && s.value) : []
 
-    createMutation.mutate({ ...form, finishes, specs })
+    if (editingId) {
+      updateMutation.mutate({ ...form, finishes, specs, isActive: true })
+    } else {
+      createMutation.mutate({ ...form, finishes, specs })
+    }
   }
 
   const handleDelete = (id, name) => {
     if (window.confirm(`Delete "${name}"? This cannot be undone.`)) {
       deleteMutation.mutate(id)
     }
+  }
+
+  const handleEdit = (product) => {
+    setForm({
+      name: product.name,
+      sku: product.sku,
+      slug: product.slug,
+      description: product.description || '',
+      categoryId: product.categoryId,
+      isFeatured: product.isFeatured,
+      finishes: product.finishes?.map(f => f.name).join(', ') || '',
+      specs: product.specs?.map(s => ({ key: s.key, value: s.value })) || [],
+    })
+    setEditingId(product.id)
+    setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleUploadClick = (productId) => {
@@ -134,7 +161,16 @@ const AdminProducts = () => {
             <span className='text-sm font-medium text-gray-900'>Products</span>
           </div>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              if (showForm) {
+                setShowForm(false)
+                setForm(emptyForm)
+                setEditingId(null)
+                setError('')
+              } else {
+                setShowForm(true)
+              }
+            }}
             className='px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 transition'
           >
             {showForm ? 'Cancel' : 'Add Product'}
@@ -146,7 +182,7 @@ const AdminProducts = () => {
         {/* Add product form */}
         {showForm && (
           <div className='bg-white rounded-xl border border-gray-100 p-6 mb-8'>
-            <h2 className='font-semibold text-gray-900 mb-6'>Add New Product</h2>
+            <h2 className='font-semibold text-gray-900 mb-6'>{editingId ? 'Edit Product' : 'Add New Product'}</h2>
             <form onSubmit={handleSubmit} className='space-y-4'>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div>
@@ -175,33 +211,90 @@ const AdminProducts = () => {
                   <select name='categoryId' value={form.categoryId} onChange={handleChange} required className='w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400'>
                     <option value=''>Select category</option>
                     {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      <optgroup key={cat.id} label={cat.name}>
+                        <option value={cat.id}>{cat.name} (Main)</option>
+                        {cat.children?.map(sub => (
+                          <option key={sub.id} value={sub.id}>{sub.name}</option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className='block text-sm font-medium text-gray-700 mb-1'>Material</label>
-                  <select name='material' value={form.material} onChange={handleChange} className='w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400'>
-                    <option value=''>Select material</option>
-                    <option>Aluminium</option>
-                    <option>Iron</option>
-                    <option>Stainless Steel</option>
-                    <option>Brass</option>
-                    <option>Zinc</option>
-                  </select>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>Finishes</label>
+                  <div className='grid grid-cols-2 gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white'>
+                    {['Zinc', 'Powder Coating/ Black', 'Self colour', 'Chrome', 'E.brass'].map(finish => {
+                      const currentFinishes = form.finishes ? form.finishes.split(',').map(f => f.trim()).filter(Boolean) : [];
+                      return (
+                        <label key={finish} className='flex items-center gap-2 cursor-pointer'>
+                          <input 
+                            type='checkbox' 
+                            checked={currentFinishes.includes(finish)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setForm({ ...form, finishes: [...currentFinishes, finish].join(', ') });
+                              } else {
+                                setForm({ ...form, finishes: currentFinishes.filter(f => f !== finish).join(', ') });
+                              }
+                            }}
+                            className='rounded border-gray-300 text-gray-900 focus:ring-gray-900'
+                          />
+                          <span className='text-gray-700'>{finish}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>Finishes</label>
-                <input type='text' name='finishes' value={form.finishes} onChange={handleChange} className='w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400' placeholder='Chrome, Antique Brass, Powder Coated Black' />
-                <p className='text-xs text-gray-400 mt-1'>Comma separated list of finishes</p>
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>Specifications</label>
-                <input type='text' name='specs' value={form.specs} onChange={handleChange} className='w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400' placeholder='Length:200mm, Weight:180g, Material:Aluminium Alloy' />
-                <p className='text-xs text-gray-400 mt-1'>Format: Key:Value, Key:Value</p>
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='block text-sm font-medium text-gray-700'>Specifications</label>
+                  <button 
+                    type='button'
+                    onClick={() => setForm({ ...form, specs: [...(form.specs || []), { key: '', value: '' }] })}
+                    className='text-xs text-blue-600 hover:text-blue-700 font-medium'
+                  >
+                    + Add Specification
+                  </button>
+                </div>
+                {(form.specs || []).map((spec, idx) => (
+                  <div key={idx} className='flex gap-2 mb-2'>
+                    <input 
+                      type='text' 
+                      value={spec.key} 
+                      onChange={(e) => {
+                        const newSpecs = [...form.specs];
+                        newSpecs[idx].key = e.target.value;
+                        setForm({ ...form, specs: newSpecs });
+                      }}
+                      placeholder='Key (e.g. Size, Material)' 
+                      className='w-1/3 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400'
+                    />
+                    <input 
+                      type='text' 
+                      value={spec.value} 
+                      onChange={(e) => {
+                        const newSpecs = [...form.specs];
+                        newSpecs[idx].value = e.target.value;
+                        setForm({ ...form, specs: newSpecs });
+                      }}
+                      placeholder='Value (e.g. 10mm)' 
+                      className='w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400'
+                    />
+                    <button 
+                      type='button'
+                      onClick={() => {
+                        const newSpecs = form.specs.filter((_, i) => i !== idx);
+                        setForm({ ...form, specs: newSpecs });
+                      }}
+                      className='text-red-500 hover:text-red-700 px-2'
+                      title='Remove specification'
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
 
               <div className='flex items-center gap-2'>
@@ -211,8 +304,8 @@ const AdminProducts = () => {
 
               {error && <p className='text-sm text-red-500'>{error}</p>}
 
-              <button type='submit' disabled={createMutation.isPending} className='px-6 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 transition disabled:opacity-50'>
-                {createMutation.isPending ? 'Creating...' : 'Create Product'}
+              <button type='submit' disabled={createMutation.isPending || updateMutation.isPending} className='px-6 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 transition disabled:opacity-50'>
+                {createMutation.isPending || updateMutation.isPending ? 'Saving...' : (editingId ? 'Update Product' : 'Create Product')}
               </button>
             </form>
           </div>
@@ -223,14 +316,15 @@ const AdminProducts = () => {
           <div className='px-6 py-4 border-b border-gray-100'>
             <h2 className='font-semibold text-gray-900'>All Products ({products.length})</h2>
           </div>
-          <table className='w-full'>
-            <thead className='bg-gray-50'>
+          <div className='overflow-x-auto'>
+            <table className='w-full min-w-[900px]'>
+              <thead className='bg-gray-50'>
               <tr>
                 <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>Image</th>
                 <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>Product</th>
                 <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>SKU</th>
                 <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>Category</th>
-                <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>Material</th>
+                <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>Finishes</th>
                 <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>Featured</th>
                 <th className='text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-3'>Actions</th>
               </tr>
@@ -257,7 +351,11 @@ const AdminProducts = () => {
                     <p className='text-sm text-gray-500'>{product.category?.name}</p>
                   </td>
                   <td className='px-6 py-4'>
-                    <p className='text-sm text-gray-500'>{product.material || '-'}</p>
+                    <p className='text-sm text-gray-500'>
+                      {product.finishes?.length > 0 
+                        ? product.finishes.map(f => f.name).join(', ') 
+                        : '-'}
+                    </p>
                   </td>
                   <td className='px-6 py-4'>
                     <span className={`text-xs px-2 py-1 rounded-full ${product.isFeatured ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'}`}>
@@ -267,6 +365,7 @@ const AdminProducts = () => {
                   <td className='px-6 py-4'>
                     <div className='flex items-center gap-3'>
                       <Link to={`/products/${product.slug}`} className='text-xs text-gray-400 hover:text-gray-900 transition'>View</Link>
+                      <button onClick={() => handleEdit(product)} className='text-xs text-blue-400 hover:text-blue-600 transition'>Edit</button>
                       <button onClick={() => handleUploadClick(product.id)} disabled={uploadingId === product.id} className='text-xs text-blue-400 hover:text-blue-600 transition disabled:opacity-50'>
                         {uploadingId === product.id ? 'Uploading...' : 'Upload Image'}
                       </button>
@@ -277,6 +376,7 @@ const AdminProducts = () => {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>

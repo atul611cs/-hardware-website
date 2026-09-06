@@ -4,6 +4,7 @@ import { getProducts } from '../../api/products.js'
 import { getInquiries } from '../../api/inquiry.js'
 import { getCategories } from '../../api/categories.js'
 import { logout } from '../../api/auth.js'
+import logo from '../../assets/logo.png'
 
 const AdminDashboard = () => {
   const navigate = useNavigate()
@@ -38,10 +39,10 @@ const AdminDashboard = () => {
       <header className='bg-white border-b border-gray-100'>
         <div className='max-w-7xl mx-auto px-4 py-4 flex items-center justify-between'>
           <div className='flex items-center gap-3'>
-            <div className='w-8 h-8 bg-gray-900 rounded flex items-center justify-center'>
-              <span className='text-white text-xs font-bold'>HW</span>
+            <div className='h-8 w-auto flex items-center justify-center'>
+              <img src={logo} alt='Balaji Hardware' className='h-7 w-auto object-contain' />
             </div>
-            <span className='font-semibold text-gray-900'>Admin Panel</span>
+            <span className='font-semibold text-gray-900'>Balaji Admin Panel</span>
           </div>
           <div className='flex items-center gap-4'>
             <Link to='/' className='text-sm text-gray-500 hover:text-gray-900 transition'>View Site</Link>

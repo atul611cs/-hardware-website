@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../../api/auth.js'
+import logo from '../../assets/logo.png'
 
 const AdminLogin = () => {
   const navigate = useNavigate()
@@ -27,14 +28,14 @@ const AdminLogin = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 flex items-center justify-center px-4'>
+    <div className='min-h-screen bg-[#121212] text-[#F3F4F6] flex items-center justify-center px-4'>
       <div className='w-full max-w-sm'>
-        <div className='text-center mb-8'>
-          <div className='w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center mx-auto mb-4'>
-            <span className='text-white text-sm font-bold'>HW</span>
+        <div className='text-center mb-8 flex flex-col items-center'>
+          <div className='w-20 h-20 mb-3 flex items-center justify-center'>
+            <img src={logo} alt='Balaji Hardware' className='w-full h-full object-contain drop-shadow-[0_0_15px_rgba(217,119,6,0.35)]' />
           </div>
-          <h1 className='text-xl font-bold text-gray-900'>Admin Login</h1>
-          <p className='text-sm text-gray-500 mt-1'>Hardware Co. Management Panel</p>
+          <h1 className='text-xl font-bold font-display text-[#F3F4F6]'>Admin Portal</h1>
+          <p className='text-xs text-[#9CA3AF] mt-1'>Balaji Hardware Management Panel</p>
         </div>
 
         <div className='bg-white rounded-xl border border-gray-100 p-8'>
