@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getCategories } from '../api/categories.js'
 import { motion } from 'framer-motion'
-import logo from '../assets/logo.png'
 
 const stats = [
   { number: '700+', label: 'Products' },
@@ -276,73 +275,49 @@ const Home = () => {
               </svg>
             </Link>
           </div>
-
-          <motion.div
-            variants={containerVariants}
-            initial='hidden'
-            whileInView='visible'
-            viewport={{ once: true, margin: '-50px' }}
-            className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8'
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'
           >
-            {dbCategories.map((cat) => (
+            {dbCategories.map((cat, index) => (
               <motion.div
                 key={cat.slug}
-                variants={cardVariants}
-                className='h-full'
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.15 }}
               >
                 <Link
                   to={`/category/${cat.slug}`}
-                  className='product-card group block h-full p-7 md:p-8 relative overflow-hidden bg-white/5 backdrop-blur-md border border-[#d97706]/30 rounded-3xl hover:border-[#d97706] hover:shadow-[0_0_30px_rgba(217,119,6,0.2)] hover:scale-[1.02] transition-all duration-500 ease-out'
+                  className='block h-full bg-white rounded-3xl p-8 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500 group relative overflow-hidden transform hover:-translate-y-1'
                 >
-                  {/* Radial Spotlight Corner Glow */}
-                  <div className='absolute top-0 right-0 w-48 h-48 bg-[radial-gradient(circle_at_top_right,rgba(217,119,6,0.3)_0%,transparent_65%)] rounded-bl-full -mr-12 -mt-12 transition-transform duration-700 ease-out group-hover:scale-125 pointer-events-none' />
-
-                  <div className='relative z-10 flex flex-col h-full justify-between'>
-                    <div>
-                      {/* Category Badge Icon */}
-                      <div className='w-14 h-14 bg-gradient-to-br from-[#d97706]/30 via-black to-black border border-[#d97706]/40 rounded-2xl mb-6 flex items-center justify-center transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.4)]'>
-                        <span className='text-[#d97706] text-sm font-bold tracking-wider font-display'>HW</span>
+                  {/* Decorative Background Element */}
+                  <div className='absolute top-0 right-0 w-40 h-40 bg-gray-50/80 rounded-bl-full -mr-10 -mt-10 transition-transform duration-700 group-hover:scale-125'></div>
+                  
+                  <div className='relative z-10'>
+                    <div className='w-14 h-14 bg-gray-900 rounded-2xl mb-6 flex items-center justify-center transform transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-lg'>
+                      <span className='text-white text-sm font-bold tracking-wider'>HW</span>
+                    </div>
+                    
+                    <h3 className='text-xl font-bold text-gray-900 mb-2 group-hover:text-gray-700 transition-colors'>{cat.name}</h3>
+                    <p className='text-xs font-semibold text-gray-400 mb-5 uppercase tracking-wider'>{cat._count?.products || 0} products</p>
+                    
+                    {cat.children?.length > 0 && (
+                      <div className='pt-5 border-t border-gray-100/80'>
+                        <p className='text-sm text-gray-500 leading-relaxed line-clamp-3'>
+                          {cat.children.map(sub => sub.name).join(' • ')}
+                        </p>
                       </div>
-
-                      <h3 className='font-display text-xl sm:text-2xl font-semibold text-[#F3F4F6] group-hover:text-[#d97706] transition-colors duration-300 mb-2 tracking-tight'>
-                        {cat.name}
-                      </h3>
-
-                      <p className='text-xs font-semibold text-[#d97706] mb-6 tracking-widest uppercase'>
-                        {cat._count?.products || 0} products available
-                      </p>
-
-                      {cat.children?.length > 0 && (
-                        <div className='pt-5 border-t border-white/10'>
-                          <p className='text-xs sm:text-sm text-[#9CA3AF] leading-relaxed line-clamp-3 font-light'>
-                            {cat.children.map((sub) => sub.name).join(' • ')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className='mt-8 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-[#9CA3AF] group-hover:text-[#F3F4F6] transition-colors duration-300'>
-                      <span className='tracking-wider uppercase font-medium'>Explore Catalog</span>
-                      <svg
-                        className='w-4 h-4 text-[#d97706] transform group-hover:translate-x-1.5 transition-transform duration-300'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
-                      </svg>
-                    </div>
+                    )}
                   </div>
                 </Link>
               </motion.div>
             ))}
           </motion.div>
-
-          <div className='mt-12 text-center md:hidden'>
-            <Link
-              to='/products'
-              className='btn-ghost w-full text-center py-3.5 text-xs font-semibold uppercase tracking-wider'
-            >
+          <div className='mt-8 text-center'>
+            <Link to='/products' className='inline-flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-900 transition'>
               View All Products
             </Link>
           </div>
@@ -358,31 +333,19 @@ const Home = () => {
             Custom Orders & International Supply
           </span>
 
-          <h2 className='relative z-10 font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-[#F3F4F6] mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#F3F4F6] via-[#E5E7EB] to-[#9CA3AF]'>
-            Ready to Place an Order?
-          </h2>
-
-          <p className='relative z-10 text-[#9CA3AF] text-base sm:text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light leading-relaxed'>
-            Connect with our engineering and sales team for volume inquiries, custom finishes, and direct factory container pricing.
+      {/* CTA */}
+      <section className='bg-white py-20 px-4 border-b border-gray-100'>
+        <div className='max-w-6xl mx-auto bg-gray-900 rounded-3xl p-12 md:p-20 text-center shadow-xl'>
+          <h2 className='text-3xl md:text-4xl font-bold text-white mb-4'>Ready to Place an Order?</h2>
+          <p className='text-gray-400 text-lg mb-10 max-w-2xl mx-auto'>
+            Get in touch with our team for bulk pricing, custom finishes, and export inquiries.
           </p>
-
-          <div className='relative z-10 flex flex-col sm:flex-row gap-4 justify-center items-stretch sm:items-center'>
-            <Link
-              to='/contact'
-              className='btn-primary !px-8 !py-3.5 text-xs sm:text-sm font-semibold uppercase tracking-wider hover:scale-[1.03] transition-all duration-500 ease-out shadow-[0_0_25px_rgba(217,119,6,0.4)]'
-            >
+          <div className='flex gap-4 justify-center flex-wrap'>
+            <Link to='/contact' className='px-8 py-3.5 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition'>
               Contact Us
             </Link>
-            <a
-              href='https://wa.me/911234567890'
-              target='_blank'
-              rel='noreferrer'
-              className='btn-ghost !px-8 !py-3.5 text-xs sm:text-sm font-semibold uppercase tracking-wider hover:scale-[1.03] transition-all duration-500 ease-out flex items-center justify-center gap-2'
-            >
-              <span>WhatsApp Us</span>
-              <svg className='w-4 h-4 text-[#d97706]' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14' />
-              </svg>
+            <a href='https://wa.me/911234567890' target='_blank' rel='noreferrer' className='px-8 py-3.5 border border-gray-600 text-white rounded-lg font-medium hover:bg-gray-800 transition'>
+              WhatsApp Us
             </a>
           </div>
         </div>

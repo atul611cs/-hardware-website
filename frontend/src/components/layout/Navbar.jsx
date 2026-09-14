@@ -6,7 +6,7 @@ import { getProducts } from '../../api/products.js'
 import { getCategories } from '../../api/categories.js'
 import logo from '../../assets/logo.png'
 
-const MotionDiv = motion.div
+import { getCategories } from '../../api/categories.js'
 
 const Navbar = () => {
   const navigate = useNavigate()
@@ -31,6 +31,7 @@ const Navbar = () => {
   })
 
   const dbCategories = categoriesData?.data || []
+
   const results = searchResults?.data || []
 
   // Close mobile menu on route change
@@ -174,241 +175,58 @@ const Navbar = () => {
                   )}
                 </NavLink>
 
-                {/* Centered Mega-Menu Dropdown */}
-                <AnimatePresence>
-                  {activeDropdown === 'products' && (
-                    <div className='absolute top-full left-1/2 -translate-x-1/2 mt-4 z-50 pointer-events-auto'>
-                      <MotionDiv
-                        initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                        className='relative w-[min(840px,calc(100vw-3rem))] rounded-3xl p-7 shadow-[0_24px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(200,158,71,0.15)] bg-[#141311]/95 backdrop-blur-xl border border-[#C89E47]/30'
-                      >
-                        {/* Invisible hover bridge */}
-                        <div className='absolute -top-4 left-0 right-0 h-4 bg-transparent' />
-
-                        {/* Upward Arrow pointing directly at Products */}
-                        <div className='absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[#141311] border-l border-t border-[#C89E47]/30 rotate-45 pointer-events-none' />
-
-                        <div className='grid grid-cols-3 gap-8 relative z-10'>
-                          {dbCategories.map((cat) => (
-                            <div key={cat.slug} className='flex flex-col'>
-                              <Link
-                                to={`/category/${cat.slug}`}
-                                className='text-sm font-semibold font-display text-[#F5F0E6] hover:text-[#C89E47] transition-colors duration-300 block mb-3 border-b border-white/10 pb-2.5 group/cat flex items-center justify-between'
-                                onClick={() => setActiveDropdown(null)}
-                              >
-                                <span>{cat.name}</span>
-                                <svg
-                                  className='w-4 h-4 opacity-0 -translate-x-2 group-hover/cat:opacity-100 group-hover/cat:translate-x-0 transition-all duration-300 text-[#C89E47]'
-                                  fill='none'
-                                  stroke='currentColor'
-                                  viewBox='0 0 24 24'
-                                >
-                                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
-                                </svg>
-                              </Link>
-                              <ul className='space-y-2 flex-1'>
-                                {cat.children?.map((sub) => (
-                                  <li key={sub.slug}>
-                                    <Link
-                                      to={`/category/${sub.slug}`}
-                                      className='text-xs text-[#A39A8A] hover:text-[#F5F0E6] hover:translate-x-1 transition-all duration-300 block py-0.5'
-                                      onClick={() => setActiveDropdown(null)}
-                                    >
-                                      {sub.name}
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-
-                          <div className='col-span-3 pt-4 mt-2 border-t border-white/10 flex items-center justify-between'>
-                            <span className='text-xs text-[#A39A8A] tracking-wide'>
-                              Crafted for architectural precision and endurance
-                            </span>
-                            <Link
-                              to='/products'
-                              className='px-5 py-2 bg-white/5 hover:bg-[#C89E47]/15 hover:border-[#C89E47]/50 border border-white/10 text-xs font-medium text-[#F5F0E6] hover:text-white rounded-full transition-all duration-300 flex items-center gap-2 group/btn shadow-[0_0_15px_rgba(0,0,0,0.5)]'
-                              onClick={() => setActiveDropdown(null)}
-                            >
-                              <span>Browse full catalog</span>
-                              <svg
-                                className='w-3.5 h-3.5 transform group-hover/btn:translate-x-1 transition-transform text-[#C89E47]'
-                                fill='none'
-                                stroke='currentColor'
-                                viewBox='0 0 24 24'
-                              >
-                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17 8l4 4m0 0l-4 4m4-4H3' />
-                              </svg>
-                            </Link>
-                          </div>
-                        </div>
-                      </MotionDiv>
-                    </div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* About Link */}
-              <NavLink
-                to='/about'
-                className={({ isActive }) =>
-                  `relative px-3.5 py-2 text-sm font-medium tracking-wide transition-colors duration-300 group ${
-                    isActive ? 'text-[#C89E47]' : 'text-[#A39A8A] hover:text-[#F5F0E6]'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <span>About</span>
-                    <span
-                      className={`absolute bottom-0 left-3.5 right-3.5 h-[2px] bg-[#C89E47] transition-transform duration-300 ease-out origin-left ${
-                        isActive ? 'scale-x-100 shadow-[0_0_8px_rgba(200,158,71,0.8)]' : 'scale-x-0 group-hover:scale-x-100'
-                      }`}
-                    />
-                  </>
-                )}
-              </NavLink>
-
-              {/* Contact Link */}
-              <NavLink
-                to='/contact'
-                className={({ isActive }) =>
-                  `relative px-3.5 py-2 text-sm font-medium tracking-wide transition-colors duration-300 group ${
-                    isActive ? 'text-[#C89E47]' : 'text-[#A39A8A] hover:text-[#F5F0E6]'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <span>Contact</span>
-                    <span
-                      className={`absolute bottom-0 left-3.5 right-3.5 h-[2px] bg-[#C89E47] transition-transform duration-300 ease-out origin-left ${
-                        isActive ? 'scale-x-100 shadow-[0_0_8px_rgba(200,158,71,0.8)]' : 'scale-x-0 group-hover:scale-x-100'
-                      }`}
-                    />
-                  </>
-                )}
-              </NavLink>
-            </nav>
-
-            {/* Desktop Actions (Search & Quote CTA - md: and above) */}
-            <div className='hidden md:flex items-center gap-3 shrink-0'>
-              {/* Desktop Elongated Search Bar */}
-              <div ref={searchRef} className="relative group hidden md:block">
-                <form onSubmit={handleSearchSubmit}>
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg
-                      className="w-4 h-4 text-[#A39A8A] group-focus-within:text-[#C89E47] transition-colors duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search here..."
-                    className="block w-64 lg:w-72 p-2 pl-10 pr-8 text-sm text-[#F5F0E6] bg-[#141311]/60 backdrop-blur-md border border-[#C89E47]/30 rounded-full focus:ring-1 focus:ring-[#C89E47] focus:border-[#C89E47] outline-none transition-all duration-300 placeholder-[#A39A8A]"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#A39A8A] hover:text-[#F5F0E6] transition-colors"
-                      aria-label="Clear search"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                </form>
-
-                {/* Search Results Dropdown */}
-                {searchQuery.length > 1 && (
-                  <div className='absolute top-full right-0 mt-3 w-80 glass-panel rounded-2xl overflow-hidden z-50 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_24px_rgba(200,158,71,0.15)] border border-[#C89E47]/30 bg-[#141311]/95 backdrop-blur-2xl'>
-                    {isFetching ? (
-                      <div className='p-5 text-xs text-[#A39A8A] text-center flex items-center justify-center gap-2'>
-                        <div className='w-3.5 h-3.5 border-2 border-[#C89E47] border-t-transparent rounded-full animate-spin'></div>
-                        Searching catalog...
-                      </div>
-                    ) : results.length === 0 ? (
-                      <div className='p-5 text-xs text-[#A39A8A] text-center'>
-                        No hardware found for "{searchQuery}"
-                      </div>
-                    ) : (
-                      <>
-                        <div className='px-4 py-2.5 border-b border-white/10 bg-white/5'>
-                          <p className='text-[11px] font-medium text-[#A39A8A] uppercase tracking-wider'>
-                            {results.length} results for "{searchQuery}"
-                          </p>
-                        </div>
-                        <div className='divide-y divide-white/5 max-h-72 overflow-y-auto'>
-                          {results.map((product) => (
-                            <button
-                              key={product.id}
-                              onClick={() => handleResultClick(product.slug)}
-                              className='w-full flex items-center gap-3 px-4 py-3 hover:bg-[#C89E47]/10 transition-colors duration-200 text-left group'
-                            >
-                              <div className='w-11 h-11 bg-black/70 border border-white/10 rounded-lg overflow-hidden shrink-0 flex items-center justify-center relative group-hover:border-[#C89E47]/50'>
-                                <div className='absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(200,158,71,0.35)_0%,rgba(200,158,71,0.05)_40%,transparent_70%)] z-0'></div>
-                                {product.images?.[0] ? (
-                                  <img
-                                    src={product.images[0].url}
-                                    alt={product.name}
-                                    className='w-full h-full object-contain relative z-10 p-1 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] group-hover:scale-105 transition-transform duration-300'
-                                  />
-                                ) : (
-                                  <span className='text-[#A39A8A] text-[10px] relative z-10 font-bold'>HW</span>
-                                )}
-                              </div>
-                              <div className='min-w-0 flex-1'>
-                                <p className='text-xs font-semibold text-[#F5F0E6] truncate group-hover:text-[#C89E47] transition-colors'>
-                                  {product.name}
-                                </p>
-                                <p className='text-[11px] text-[#A39A8A] truncate'>
-                                  {product.category?.name} {product.sku && `· ${product.sku}`}
-                                </p>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                        <div className='p-2.5 border-t border-white/10 bg-white/5 text-center'>
-                          <button
-                            onClick={handleSearchSubmit}
-                            className='text-xs font-medium text-[#C89E47] hover:text-white transition-colors duration-300 flex items-center justify-center gap-1.5 w-full'
+              <AnimatePresence>
+                {activeDropdown === 'products' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 5, scale: 0.98 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className='absolute top-full -right-20 w-[850px] bg-white/95 backdrop-blur-xl border border-gray-100 rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.08)] p-6 z-50 mt-4 origin-top'
+                  >
+                    {/* Decorative Pointer */}
+                    <div className='absolute -top-2 left-1/4 w-4 h-4 bg-white border-l border-t border-gray-100 transform rotate-45 -translate-x-1/2'></div>
+                    
+                    <div className='grid grid-cols-3 gap-6 relative z-10'>
+                      {dbCategories.map((cat) => (
+                        <div key={cat.slug} className='flex flex-col'>
+                          <Link
+                            to={`/category/${cat.slug}`}
+                            className='text-base font-bold text-gray-900 hover:text-blue-600 transition block mb-2 border-b border-gray-100/80 pb-2 group flex items-center justify-between'
+                            onClick={() => setActiveDropdown(null)}
                           >
-                            <span>View all results</span>
-                            <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M14 5l7 7m0 0l-7 7m7-7H3' />
+                            <span>{cat.name}</span>
+                            <svg className='w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-blue-600' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
                             </svg>
-                          </button>
+                          </Link>
+                          <ul className='space-y-1 flex-1'>
+                            {cat.children?.map((sub) => (
+                              <li key={sub.slug}>
+                                <Link
+                                  to={`/category/${sub.slug}`}
+                                  className='text-[14px] text-gray-500 hover:text-gray-900 hover:translate-x-1 transition-all block'
+                                  onClick={() => setActiveDropdown(null)}
+                                >
+                                  {sub.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                      </>
-                    )}
-                  </div>
+                      ))}
+                      <div className='col-span-3 pt-4 mt-1 border-t border-gray-100/80 flex justify-end'>
+                        <Link to='/products' className='px-6 py-2 bg-gray-50 hover:bg-gray-100 text-sm font-semibold text-gray-900 rounded-xl transition flex items-center gap-2 group'>
+                          View all products
+                          <svg className='w-4 h-4 transform group-hover:translate-x-1 transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17 8l4 4m0 0l-4 4m4-4H3' />
+                          </svg>
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
                 )}
-              </div>
-
-              {/* Get a Quote Button */}
-              <Link
-                to='/contact'
-                className='btn-primary !px-5 !py-2 text-xs font-semibold tracking-wider uppercase hover:scale-[1.03] transition-all duration-500 ease-out'
-              >
-                Get a Quote
-              </Link>
+              </AnimatePresence>
             </div>
 
             {/* Mobile Hamburger Button (visible only on md:hidden) */}
@@ -638,7 +456,39 @@ const Navbar = () => {
           )}
         </AnimatePresence>
 
-      </div>
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className='md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-2'>
+          <form onSubmit={handleSearchSubmit} className='flex gap-2 mb-3'>
+            <input
+              type='text'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder='Search products...'
+              className='flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400'
+            />
+            <button type='submit' className='px-3 py-2 bg-gray-900 text-white rounded-lg text-sm'>Go</button>
+          </form>
+
+          <Link to='/' className='block py-2 text-sm text-gray-700' onClick={() => setMobileOpen(false)}>Home</Link>
+          <Link to='/products' className='block py-2 text-sm text-gray-700' onClick={() => setMobileOpen(false)}>Products</Link>
+          {dbCategories.map((cat) => (
+            <Link
+              key={cat.slug}
+              to={`/category/${cat.slug}`}
+              className='block py-1 pl-4 text-xs text-gray-500'
+              onClick={() => setMobileOpen(false)}
+            >
+              {cat.name}
+            </Link>
+          ))}
+          <Link to='/about' className='block py-2 text-sm text-gray-700' onClick={() => setMobileOpen(false)}>About</Link>
+          <Link to='/contact' className='block py-2 text-sm text-gray-700' onClick={() => setMobileOpen(false)}>Contact</Link>
+          <Link to='/contact' className='block mt-2 px-4 py-2 bg-gray-900 text-white text-sm rounded-lg text-center' onClick={() => setMobileOpen(false)}>
+            Get a Quote
+          </Link>
+        </div>
+      )}
     </header>
   )
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -8,11 +8,9 @@ import { submitInquiry } from '../api/inquiry.js'
 const ProductDetail = () => {
   const { slug } = useParams()
   const [activeImage, setActiveImage] = useState(0)
+  const [activeSize, setActiveSize] = useState(null)
   const [inquirySent, setInquirySent] = useState(false)
   const [sending, setSending] = useState(false)
-  const [showBar, setShowBar] = useState(false)
-  const heroRef = useRef(null)
-
   const { data, isLoading, isError } = useQuery({
     queryKey: ['product', slug],
     queryFn: () => getProductBySlug(slug),
@@ -89,15 +87,50 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className='bg-[#121212] text-[#F3F4F6] min-h-screen pb-28 sm:pb-32 selection:bg-[#d97706]/30'>
-      <div ref={heroRef} className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16'>
-        
-        {/* Breadcrumb Navigation */}
-        <nav className='flex flex-wrap items-center gap-2 text-xs text-[#9CA3AF] mb-8 sm:mb-12 font-medium'>
-          <Link to='/' className='hover:text-[#d97706] transition-colors duration-300'>Home</Link>
-          <span className='text-white/30'>/</span>
-          <Link to='/products' className='hover:text-[#d97706] transition-colors duration-300'>Products</Link>
-          <span className='text-white/30'>/</span>
+    <div className='max-w-7xl mx-auto px-4 py-16'>
+      {/* Breadcrumb */}
+      <nav className='flex gap-2 text-sm text-gray-400 mb-8'>
+        <Link to='/' className='hover:text-gray-900 transition'>Home</Link>
+        <span>/</span>
+        <Link to='/products' className='hover:text-gray-900 transition'>Products</Link>
+        <span>/</span>
+        {product.category && (
+          <>
+            <Link to={`/category/${product.category.slug}`} className='hover:text-gray-900 transition'>{product.category.name}</Link>
+            <span>/</span>
+          </>
+        )}
+        <span className='text-gray-600'>{product.name}</span>
+      </nav>
+
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-12'>
+        {/* Images */}
+        <div>
+          <div className='bg-gray-50 rounded-xl h-96 flex items-center justify-center mb-4 overflow-hidden'>
+            {product.images?.length > 0 ? (
+              <img src={product.images[activeImage]?.url} alt={product.name} className='w-full h-full object-contain' />
+            ) : (
+              <div className='text-gray-300 text-sm'>No image available</div>
+            )}
+          </div>
+          {product.images?.length > 1 && (
+            <div className='flex gap-2'>
+              {product.images.map((img, i) => (
+                <button
+                  key={img.id}
+                  onClick={() => setActiveImage(i)}
+                  className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition ${activeImage === i ? 'border-gray-900' : 'border-transparent'}`}
+                >
+                  <img src={img.url} alt='' className='w-full h-full object-cover' />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div>
+          {/* 1. Category */}
           {product.category && (
             <>
               <Link
@@ -109,50 +142,18 @@ const ProductDetail = () => {
               <span className='text-white/30'>/</span>
             </>
           )}
-          <span className='text-[#d97706] truncate max-w-[200px] sm:max-w-none'>{product.name}</span>
-        </nav>
+          {/* 2. Product Name */}
+          <h1 className='text-3xl font-bold text-gray-900 mb-2'>{product.name}</h1>
+          {/* 3. SKU */}
+          {product.sku && <p className='text-sm text-gray-400 mb-4'>SKU: {product.sku}</p>}
 
-        {/* 2-Column Responsive Layout: Vertical on Mobile, Split 2-Col on Desktop */}
-        <div className='grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start'>
-          
-          {/* Column 1: Image Showcase (Mobile on Top, Desktop Left) */}
-          <div className='w-full lg:col-span-7 flex flex-col'>
-            {/* MANDATORY EXACT SPOTLIGHT CONTAINER STRUCTURE */}
-            <div className='relative w-full flex items-center justify-center bg-white/5 backdrop-blur-xl border border-[#d97706]/30 rounded-3xl md:rounded-[2.5rem] overflow-hidden group hover:border-[#d97706] hover:shadow-[0_0_35px_rgba(217,119,6,0.25)] transition-all duration-500 min-h-[320px] sm:min-h-[440px] md:min-h-[540px] p-6 sm:p-10 md:p-14 shadow-[0_20px_50px_rgba(0,0,0,0.85)]'>
-              {/* Radial Spotlight Ambient Background */}
-              <div className='absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.38)_0%,rgba(217,119,6,0.06)_40%,transparent_70%)] z-0'></div>
-              <div className='absolute -bottom-20 -left-20 w-64 h-64 bg-[#d97706]/15 rounded-full blur-3xl pointer-events-none' />
-
-              {/* Hardware Image */}
-              {product.images?.length > 0 ? (
-                <img
-                  src={product.images[activeImage]?.url}
-                  alt={product.name}
-                  className='relative z-10 w-full h-full max-h-[300px] sm:max-h-[420px] md:max-h-[460px] object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.9)] transition-transform duration-700 ease-out group-hover:scale-105'
-                />
-              ) : (
-                <div className='relative z-10 text-[#9CA3AF] text-sm font-mono bg-white/5 px-4 py-2 rounded-xl border border-white/10'>
-                  No image available
-                </div>
-              )}
-            </div>
-
-            {/* Thumbnail Row */}
-            {product.images?.length > 1 && (
-              <div className='flex gap-3 sm:gap-4 mt-5 overflow-x-auto pb-2 scrollbar-none'>
-                {product.images.map((img, i) => (
-                  <button
-                    key={img.id}
-                    onClick={() => setActiveImage(i)}
-                    className={`w-18 h-18 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border p-2 transition-all duration-300 shrink-0 bg-black/60 backdrop-blur-md ${
-                      activeImage === i
-                        ? 'border-[#d97706] shadow-[0_0_20px_rgba(217,119,6,0.4)] scale-105 bg-[#d97706]/10'
-                        : 'border-white/10 hover:border-[#d97706]/50 opacity-70 hover:opacity-100'
-                    }`}
-                    aria-label={`View image ${i + 1}`}
-                  >
-                    <img src={img.url} alt='' className='w-full h-full object-contain' />
-                  </button>
+          {/* 4. Finishes */}
+          {product.finishes?.length > 0 && (
+            <div className='mb-6'>
+              <h3 className='text-sm font-semibold text-gray-900 mb-2'>Available Finishes</h3>
+              <div className='flex flex-wrap gap-2'>
+                {product.finishes.map((finish) => (
+                  <span key={finish.id} className='px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full'>{finish.name}</span>
                 ))}
               </div>
             )}
@@ -195,55 +196,108 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Available Finishes */}
-            {product.finishes?.length > 0 && (
-              <div className='mb-8'>
-                <span className='text-xs font-semibold uppercase tracking-widest text-[#d97706] mb-3 block'>
-                  Available Finishes
-                </span>
+          {/* General Specifications */}
+          {(() => {
+            const generalSpecs = product.specs?.filter(s => !s.size) || [];
+            if (generalSpecs.length === 0) return null;
+            return (
+              <div className='mb-6'>
+                <h3 className='text-sm font-semibold text-gray-900 mb-3'>General Specifications</h3>
+                <div className='overflow-hidden'>
+                  <table className='w-full text-sm text-left bg-transparent'>
+                    <tbody className='divide-y divide-gray-100'>
+                      {generalSpecs.map((spec) => (
+                        <tr key={spec.id} className='hover:bg-gray-50/50 transition'>
+                          <td className='py-2.5 pr-4 font-bold text-gray-900 w-1/3'>{spec.key}</td>
+                          <td className='py-2.5 px-4 text-gray-600'>{spec.value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Sizes */}
+          {(() => {
+            const sizes = product.specs ? Array.from(new Set(product.specs.filter(s => s.size).map(s => s.size))) : [];
+            if (sizes.length === 0) return null;
+            
+            const currentSize = activeSize && sizes.includes(activeSize) ? activeSize : sizes[0];
+            
+            return (
+              <div className='mb-6'>
+                <h3 className='text-sm font-semibold text-gray-900 mb-2'>Sizes</h3>
                 <div className='flex flex-wrap gap-2'>
-                  {product.finishes.map((finish) => (
-                    <span
-                      key={finish.id}
-                      className='px-4 py-2 bg-white/5 border border-[#d97706]/30 text-[#F3F4F6] text-xs font-medium rounded-full shadow-[0_0_12px_rgba(217,119,6,0.1)] hover:border-[#d97706] transition-all duration-300'
+                  {sizes.map((size) => (
+                    <button 
+                      key={size} 
+                      onClick={() => setActiveSize(size)}
+                      className={`px-4 py-2 text-sm rounded-lg border transition font-medium ${
+                        currentSize === size 
+                          ? 'border-gray-900 bg-gray-900 text-white' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
+                      }`}
                     >
-                      {finish.name}
-                    </span>
+                      {size}
+                    </button>
                   ))}
                 </div>
               </div>
-            )}
+            );
+          })()}
 
-            {/* Inquiry Action Buttons */}
-            {inquirySent ? (
-              <div className='glass-panel rounded-2xl p-6 text-center bg-[#d97706]/15 border border-[#d97706]/60 shadow-[0_0_25px_rgba(217,119,6,0.25)]'>
-                <div className='w-10 h-10 rounded-full bg-[#d97706]/20 flex items-center justify-center mx-auto mb-3 text-[#d97706] font-bold'>
-                  ✓
+          {/* Size-specific Specifications */}
+          {(() => {
+            const sizes = product.specs ? Array.from(new Set(product.specs.filter(s => s.size).map(s => s.size))) : [];
+            const currentSize = activeSize && sizes.includes(activeSize) ? activeSize : (sizes.length > 0 ? sizes[0] : null);
+            
+            const sizeSpecs = product.specs?.filter(s => s.size === currentSize) || [];
+            if (sizeSpecs.length === 0) return null;
+            
+            return (
+              <div className='mb-6'>
+                <h3 className='text-sm font-semibold text-gray-900 mb-3'>{currentSize} Specifications</h3>
+                <div className='overflow-hidden'>
+                  <table className='w-full text-sm text-left bg-transparent'>
+                    <tbody className='divide-y divide-gray-100'>
+                      {sizeSpecs.map((spec) => (
+                        <tr key={spec.id} className='hover:bg-gray-50/50 transition'>
+                          <td className='py-2.5 pr-4 font-bold text-gray-900 w-1/3'>{spec.key}</td>
+                          <td className='py-2.5 px-4 text-gray-600'>{spec.value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <h4 className='font-display font-semibold text-[#F3F4F6] text-base mb-1'>Inquiry Received</h4>
-                <p className='text-xs text-[#9CA3AF] leading-relaxed'>
-                  Our export team will contact you within 24 hours with custom pricing.
-                </p>
               </div>
-            ) : (
-              <div className='flex flex-col sm:flex-row gap-3.5 pt-2'>
-                <button
-                  onClick={handleInquiry}
-                  disabled={sending}
-                  className='btn-primary flex-1 !py-3.5 text-xs sm:text-sm font-semibold uppercase tracking-wider hover:scale-[1.03] transition-all duration-500 ease-out shadow-[0_0_25px_rgba(217,119,6,0.4)] disabled:opacity-50'
-                >
-                  {sending ? 'Sending Inquiry...' : 'Request a Quote'}
-                </button>
-                <Link
-                  to='/contact'
-                  className='btn-ghost flex-1 text-center !py-3.5 text-xs sm:text-sm font-semibold uppercase tracking-wider hover:scale-[1.03] transition-all duration-500 ease-out'
-                >
-                  Contact Us Directly
-                </Link>
-              </div>
-            )}
+            );
+          })()}
 
-          </div>
+          {/* 7. Description */}
+          {product.description && (
+            <div className='mb-6'>
+              <h3 className='text-sm font-semibold text-gray-900 mb-2'>Description</h3>
+              <p className='text-gray-600 leading-relaxed'>{product.description}</p>
+            </div>
+          )}
+
+          {/* Inquiry */}
+          {inquirySent ? (
+            <div className='bg-green-50 border border-green-200 rounded-xl p-4 text-center'>
+              <p className='text-sm font-medium text-green-800'>Inquiry sent! We will get back to you within 24 hours.</p>
+            </div>
+          ) : (
+            <div className='space-y-3'>
+              <button onClick={handleInquiry} disabled={sending} className='w-full py-3 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition disabled:opacity-50'>
+                {sending ? 'Sending...' : 'Request a Quote'}
+              </button>
+              <Link to='/contact' className='w-full py-3 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:border-gray-400 transition text-center block'>
+                Contact Us Directly
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Specifications Section */}

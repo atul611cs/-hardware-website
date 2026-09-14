@@ -33,12 +33,12 @@ const Footer = () => {
           </div>
 
           <div>
-            <h4 className='text-[#F3F4F6] text-xs font-semibold tracking-[0.18em] uppercase mb-5'>Products</h4>
-            <ul className='space-y-2.5 text-sm'>
-              <li><Link to='/category/architectural-hardware' className='hover:text-[#d97706] transition-colors duration-300'>Architectural Hardware</Link></li>
-              <li><Link to='/category/gate-hardware' className='hover:text-[#d97706] transition-colors duration-300'>Gate Hardware</Link></li>
-              <li><Link to='/category/ironmongery' className='hover:text-[#d97706] transition-colors duration-300'>Ironmongery</Link></li>
-              <li><Link to='/products' className='hover:text-[#d97706] transition-colors duration-300'>View All Products</Link></li>
+            <h4 className='text-white text-sm font-semibold mb-4'>Products</h4>
+            <ul className='space-y-2 text-sm'>
+              <li><Link to='/category/architectural-hardware' className='hover:text-white transition'>Architectural Hardware</Link></li>
+              <li><Link to='/category/gate-hardware' className='hover:text-white transition'>Gate Hardware</Link></li>
+              <li><Link to='/category/ironmongery' className='hover:text-white transition'>Ironmongery</Link></li>
+              <li><Link to='/products' className='hover:text-white transition'>View All Products</Link></li>
             </ul>
           </div>
 

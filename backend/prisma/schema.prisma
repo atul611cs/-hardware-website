@@ -41,6 +41,7 @@ model Product {
   slug        String      @unique
   description String?
   material    String?
+  sizes       String?
   isActive    Boolean     @default(true)
   isFeatured  Boolean     @default(false)
 
@@ -82,6 +83,7 @@ model Spec {
   id        String   @id @default(uuid())
   key       String
   value     String
+  size      String?
 
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)

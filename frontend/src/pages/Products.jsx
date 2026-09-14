@@ -5,29 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { getProducts } from '../api/products.js'
 import { getCategories } from '../api/categories.js'
 
-const finishes = ['Zinc', 'Powder Coating/ Black', 'Self colour', 'Chrome', 'E.brass']
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-}
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-}
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -104,12 +82,15 @@ const Products = () => {
                 <span>Filters {(category || finish || search) && '• Active'}</span>
               </button>
 
+      <div className='flex gap-8'>
+        {/* Sidebar filters */}
+        <aside className='hidden md:block w-56 shrink-0'>
+          <div className='sticky top-24'>
+            <div className='flex items-center justify-between mb-4'>
+              <h3 className='font-semibold text-gray-900 text-sm'>Filters</h3>
               {(category || finish || search) && (
-                <button
-                  onClick={clearFilters}
-                  className='py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-[#d97706]'
-                >
-                  Reset
+                <button onClick={clearFilters} className='text-xs text-gray-500 hover:text-gray-900 transition'>
+                  Clear all
                 </button>
               )}
             </div>
@@ -153,12 +134,11 @@ const Products = () => {
                 </button>
               </div>
 
-              {/* Mobile Category List */}
-              <div className='mb-6'>
-                <h4 className='text-xs font-semibold text-[#d97706] uppercase tracking-widest mb-3'>
-                  Category
-                </h4>
-                <div className='flex flex-wrap gap-2'>
+            {/* Categories & Subcategories */}
+            <div className='mb-6'>
+              <h4 className='text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3'>Category</h4>
+              <ul className='space-y-1'>
+                <li>
                   <button
                     onClick={() => setFilter('category', '')}
                     className={`text-xs px-3 py-2 rounded-xl transition-all ${
@@ -169,71 +149,63 @@ const Products = () => {
                   >
                     All Categories
                   </button>
-                  {categories.map((cat) => (
+                </li>
+                {categories.map((cat) => (
+                  <li key={cat.id} className='mb-2'>
                     <button
                       key={cat.id}
                       onClick={() => setFilter('category', cat.slug)}
-                      className={`text-xs px-3 py-2 rounded-xl transition-all ${
-                        category === cat.slug
-                          ? 'bg-[#d97706] text-white font-medium shadow-[0_0_12px_rgba(217,119,6,0.3)]'
-                          : 'bg-white/5 text-[#9CA3AF] border border-white/10'
-                      }`}
+                      className={`text-sm w-full text-left px-2 py-1 rounded transition ${category === cat.slug ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`}
                     >
                       {cat.name}
                     </button>
-                  ))}
-                </div>
-              </div>
+                    {/* Subcategories */}
+                    {cat.children && cat.children.length > 0 && (
+                      <ul className='pl-4 mt-1 space-y-1'>
+                        {cat.children.map((sub) => (
+                          <li key={sub.id}>
+                            <button
+                              onClick={() => setFilter('category', sub.slug)}
+                              className={`text-xs w-full text-left px-2 py-1 rounded transition ${category === sub.slug ? 'text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
+                            >
+                              {sub.name}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </aside>
 
-              {/* Mobile Finish List */}
-              <div>
-                <h4 className='text-xs font-semibold text-[#d97706] uppercase tracking-widest mb-3'>
-                  Finish
-                </h4>
-                <div className='flex flex-wrap gap-2'>
-                  <button
-                    onClick={() => setFilter('finish', '')}
-                    className={`text-xs px-3 py-2 rounded-xl transition-all ${
-                      !finish
-                        ? 'bg-[#d97706] text-white font-medium shadow-[0_0_12px_rgba(217,119,6,0.3)]'
-                        : 'bg-white/5 text-[#9CA3AF] border border-white/10'
-                    }`}
-                  >
-                    All Finishes
-                  </button>
-                  {finishes.map((fin) => (
-                    <button
-                      key={fin}
-                      onClick={() => setFilter('finish', fin)}
-                      className={`text-xs px-3 py-2 rounded-xl transition-all ${
-                        finish === fin
-                          ? 'bg-[#d97706] text-white font-medium shadow-[0_0_12px_rgba(217,119,6,0.3)]'
-                          : 'bg-white/5 text-[#9CA3AF] border border-white/10'
-                      }`}
-                    >
-                      {fin}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Main Content Layout with Sidebar & Product Grid */}
-        <div className='flex flex-col md:flex-row gap-8 lg:gap-12'>
-          
-          {/* Desktop Filters Sidebar */}
-          <aside className='hidden md:block md:w-64 lg:w-72 shrink-0'>
-            <div className='sticky top-28 bg-white/5 backdrop-blur-xl border border-[#d97706]/30 rounded-3xl p-6 lg:p-7 shadow-[0_15px_35px_rgba(0,0,0,0.6)]'>
-              <div className='flex items-center justify-between mb-6 border-b border-white/10 pb-4'>
-                <h3 className='font-display font-semibold text-[#F3F4F6] text-sm uppercase tracking-wider'>
-                  Filters
-                </h3>
-                {(category || finish || search) && (
-                  <button
-                    onClick={clearFilters}
-                    className='text-xs text-[#d97706] hover:text-white transition-colors duration-300 font-medium'
+        {/* Product grid */}
+        <div className='flex-1'>
+          {productsLoading ? (
+            <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className='bg-gray-100 rounded-xl h-64 animate-pulse'></div>
+              ))}
+            </div>
+          ) : products.length === 0 ? (
+            <div className='text-center py-20'>
+              <p className='text-gray-400 mb-4'>
+                {search ? `No products found for "${search}"` : 'No products found'}
+              </p>
+              <button onClick={clearFilters} className='text-sm text-gray-900 underline'>
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+                {products.map((product) => (
+                  <Link
+                    key={product.id}
+                    to={`/products/${product.slug}`}
+                    className='group border border-gray-100 rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-md transition'
                   >
                     Reset all
                   </button>
