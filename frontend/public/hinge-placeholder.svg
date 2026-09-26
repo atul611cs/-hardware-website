@@ -1,0 +1,26 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'>
+  <defs>
+    <linearGradient id='brass' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#EAC775'/>
+      <stop offset='50%' stop-color='#C89E47'/>
+      <stop offset='100%' stop-color='#966F23'/>
+    </linearGradient>
+    <linearGradient id='pin' x1='0%' y1='0%' x2='100%' y2='0%'>
+      <stop offset='0%' stop-color='#F5E2B3'/>
+      <stop offset='50%' stop-color='#C89E47'/>
+      <stop offset='100%' stop-color='#735216'/>
+    </linearGradient>
+  </defs>
+  <rect x='18' y='22' width='28' height='56' rx='3' fill='url(#brass)' stroke='#EAC775' stroke-width='1.5'/>
+  <circle cx='30' cy='32' r='3.5' fill='#141311' stroke='#C89E47' stroke-width='1'/>
+  <circle cx='30' cy='50' r='3.5' fill='#141311' stroke='#C89E47' stroke-width='1'/>
+  <circle cx='30' cy='68' r='3.5' fill='#141311' stroke='#C89E47' stroke-width='1'/>
+  <rect x='54' y='22' width='28' height='56' rx='3' fill='url(#brass)' stroke='#EAC775' stroke-width='1.5'/>
+  <circle cx='70' cy='32' r='3.5' fill='#141311' stroke='#C89E47' stroke-width='1'/>
+  <circle cx='70' cy='50' r='3.5' fill='#141311' stroke='#C89E47' stroke-width='1'/>
+  <circle cx='70' cy='68' r='3.5' fill='#141311' stroke='#C89E47' stroke-width='1'/>
+  <rect x='46' y='18' width='8' height='64' rx='4' fill='url(#pin)' stroke='#EAC775' stroke-width='1.5'/>
+  <line x1='46' y1='34' x2='54' y2='34' stroke='#141311' stroke-width='1.5'/>
+  <line x1='46' y1='50' x2='54' y2='50' stroke='#141311' stroke-width='1.5'/>
+  <line x1='46' y1='66' x2='54' y2='66' stroke='#141311' stroke-width='1.5'/>
+</svg>

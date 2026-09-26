@@ -22,7 +22,7 @@ const Footer = () => {
               </div>
             </div>
             <p className='text-sm leading-relaxed mb-6 text-[#9CA3AF]'>
-              Manufacturers and exporters of premium architectural hardware,
+              Manufacturers of premium architectural hardware,
               gate hardware, and aluminium fittings. Proudly made in India.
             </p>
             <div className='flex gap-3'>
@@ -57,8 +57,8 @@ const Footer = () => {
             <h4 className='text-[#F3F4F6] text-xs font-semibold tracking-[0.18em] uppercase mb-5'>Get in Touch</h4>
             <ul className='space-y-3 text-sm'>
               <li className='flex gap-2'>
-                <span className='shrink-0 text-[#d97706] font-semibold'>Tel:</span>
-                <a href='tel:+911234567890' className='hover:text-[#d97706] transition-colors duration-300'>+91 12345 67890</a>
+                <span className='shrink-0 text-[#d97706] font-semibold'>Loc:</span>
+                <span>123 Industrial Area, Aligarh, UP 202001, India</span>
               </li>
               <li className='flex gap-2'>
                 <span className='shrink-0 text-[#d97706] font-semibold'>Email:</span>
@@ -67,17 +67,15 @@ const Footer = () => {
             </ul>
 
             {/* Glassmorphism Embedded Google Map */}
-            <div className='w-full h-48 mt-4 rounded-2xl overflow-hidden border border-[#d97706]/30 bg-white/5 backdrop-blur-md group hover:border-[#d97706] hover:shadow-[0_0_15px_rgba(217,119,6,0.15)] transition-all duration-300'>
+            <div className='w-full h-44 mt-4 rounded-2xl overflow-hidden border border-[#d97706]/30 bg-white/5 backdrop-blur-md group hover:border-[#d97706] hover:shadow-[0_0_15px_rgba(217,119,6,0.15)] transition-all duration-300'>
               <iframe
-                src='https://maps.google.com/maps?q=123+Industrial+Area,+Mumbai,+Maharashtra+400001&t=&z=13&ie=UTF8&iwloc=&output=embed'
+                src='https://maps.google.com/maps?q=123+Industrial+Area,+Aligarh,+Uttar+Pradesh+202001&t=&z=13&ie=UTF8&iwloc=&output=embed'
                 className='w-full h-full border-0 grayscale-[20%] invert-[90%] hue-rotate-[180deg] contrast-[85%]'
                 loading='lazy'
                 referrerPolicy='no-referrer-when-downgrade'
                 title='Company Location'
               ></iframe>
             </div>
-
-            <a href='https://wa.me/911234567890' target='_blank' rel='noreferrer' className='mt-6 inline-flex items-center gap-2 px-5 py-2.5 bg-[#d97706] hover:bg-[#b45309] text-white text-sm font-medium rounded-full shadow-[0_0_18px_rgba(217,119,6,0.3)] hover:scale-[1.03] transition-all duration-300 ease-premium'>WhatsApp Us</a>
           </div>
 
         </div>

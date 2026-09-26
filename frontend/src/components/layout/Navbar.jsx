@@ -67,30 +67,6 @@ const Navbar = () => {
 
   return (
     <header className='sticky top-0 z-50 w-full'>
-      {/* Top Announcement & Quick Contact Bar */}
-      <div className='bg-[#0a0a0a]/90 backdrop-blur-md text-[#9CA3AF] text-xs py-2 border-b border-white/5'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center gap-3'>
-          <span className='tracking-wider text-[11px] uppercase text-[#9CA3AF] flex items-center gap-1.5'>
-            <span className='w-1.5 h-1.5 rounded-full bg-[#C89E47] animate-pulse'></span>
-            Proudly Made in India
-          </span>
-          <div className='flex items-center gap-4 sm:gap-6 text-[11px] sm:text-xs'>
-            <a
-              href='tel:+911234567890'
-              className='hover:text-[#C89E47] transition-colors duration-300 font-medium'
-            >
-              +91 12345 67890
-            </a>
-            <a
-              href='mailto:info@hardware.com'
-              className='hidden sm:inline hover:text-[#C89E47] transition-colors duration-300 font-medium'
-            >
-              info@hardware.com
-            </a>
-          </div>
-        </div>
-      </div>
-
       {/* Main Glassmorphic Navigation Bar */}
       <div className='relative glass-nav noise-overlay bg-[#121212]/85 backdrop-blur-xl border-b border-[#C89E47]/30 shadow-[0_8px_32px_rgba(0,0,0,0.5)]'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6'>
