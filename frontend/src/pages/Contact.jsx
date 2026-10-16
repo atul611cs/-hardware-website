@@ -92,37 +92,28 @@ const Contact = () => {
           </div>
 
           {/* Contact Details & Hours */}
-          <div className='space-y-8 md:pt-2'>
-            <div className='bg-white/5 backdrop-blur-md border border-[#d97706]/30 rounded-2xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'>
+          <div className='space-y-8 md:pt-2 flex flex-col justify-start'>
+            <div className='bg-white/5 backdrop-blur-md border border-[#d97706]/30 rounded-2xl p-6 md:p-8 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'>
               <h3 className='font-display font-semibold text-lg text-[#F3F4F6] mb-5'>Contact Information</h3>
-              <ul className='space-y-3.5 text-sm text-[#9CA3AF]'>
-                <li className='flex gap-3'>
+              <ul className='space-y-4 text-sm text-[#9CA3AF]'>
+                <li className='flex items-start gap-3.5'>
                   <span className='text-[#d97706] font-semibold shrink-0'>Loc:</span>
-                  <span>123 Industrial Area, Aligarh, UttarPradesh 202001, India</span>
+                  <span className='leading-relaxed'>123 Industrial Area, Aligarh, Uttar Pradesh 202001, India</span>
                 </li>
-                <li className='flex gap-3'>
-                  <span className='text-[#d97706] font-semibold shrink-0'>Tel:</span>
-                  <a href='tel:+911234567890' className='hover:text-[#d97706] transition-colors duration-300'>+91 12345 67890</a>
-                </li>
-                <li className='flex gap-3'>
+                <li className='flex items-center gap-3.5'>
                   <span className='text-[#d97706] font-semibold shrink-0'>Email:</span>
                   <a href='mailto:info@hardware.com' className='hover:text-[#d97706] transition-colors duration-300'>info@hardware.com</a>
                 </li>
               </ul>
             </div>
 
-            <div className='bg-white/5 backdrop-blur-md border border-[#d97706]/30 rounded-2xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'>
+            <div className='bg-white/5 backdrop-blur-md border border-[#d97706]/30 rounded-2xl p-6 md:p-8 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'>
               <h3 className='font-display font-semibold text-lg text-[#F3F4F6] mb-5'>Business Hours</h3>
-              <ul className='space-y-3 text-sm text-[#9CA3AF]'>
+              <ul className='space-y-3.5 text-sm text-[#9CA3AF]'>
                 <li className='flex justify-between gap-4 border-b border-white/10 pb-2.5'><span>Monday - Friday</span><span>9:00 AM - 6:00 PM</span></li>
                 <li className='flex justify-between gap-4 border-b border-white/10 pb-2.5'><span>Saturday</span><span>9:00 AM - 2:00 PM</span></li>
-                <li className='flex justify-between gap-4'><span>Sunday</span><span className='text-[#d97706]'>Closed</span></li>
+                <li className='flex justify-between gap-4'><span>Sunday</span><span className='text-[#d97706] font-medium'>Closed</span></li>
               </ul>
-            </div>
-
-            <div className='bg-white/5 backdrop-blur-md border border-[#d97706]/30 rounded-2xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'>
-              <h3 className='font-display font-semibold text-lg text-[#F3F4F6] mb-4'>Quick Connect</h3>
-              <a href='https://wa.me/911234567890' target='_blank' rel='noreferrer' className='btn-primary inline-flex items-center gap-2'>WhatsApp Us</a>
             </div>
           </div>
         </div>
